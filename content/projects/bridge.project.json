@@ -1,0 +1,32 @@
+{
+  "id": "project.bridge",
+  "version": 1,
+  "status": "draft",
+  "title_key": "project.bridge.title",
+  "story_key": "project.bridge.story",
+  "mission_key": "project.bridge.mission",
+  "interests": ["interest.engineering"],
+  "lanes": {
+    "junior": {
+      "age_range": [3, 5],
+      "steps": ["step.bridge.j1", "step.bridge.j2"],
+      "experience": "exp.bridge.j"
+    },
+    "explorer": {
+      "age_range": [6, 8],
+      "steps": ["step.bridge.e1", "step.bridge.e2"],
+      "experience": "exp.bridge.e"
+    },
+    "maker": {
+      "age_range": [8, 10],
+      "steps": ["step.bridge.m1", "step.bridge.m2"],
+      "experience": "exp.bridge.m"
+    }
+  },
+  "learning_objectives": ["concept.load", "concept.structure"],
+  "required_skills": ["skill.experimentation"],
+  "materials": [],
+  "reflection_prompts": ["reflection.what_worked", "reflection.would_change"],
+  "portfolio_artifact": { "kind": "experiment_result" },
+  "safety": { "risk_class": "low", "notes_key": "project.bridge.safety" }
+}

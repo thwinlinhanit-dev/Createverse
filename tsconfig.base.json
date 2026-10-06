@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "moduleDetection": "force",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@createverse/shared-types": ["packages/shared-types/src/index.ts"],
+      "@createverse/learning-core": ["packages/learning-core/src/index.ts"],
+      "@createverse/ai-core": ["packages/ai-core/src/index.ts"],
+      "@createverse/content-sdk": ["packages/content-sdk/src/index.ts"],
+      "@createverse/design-tokens": ["packages/design-tokens/src/index.ts"]
+    }
+  }
+}

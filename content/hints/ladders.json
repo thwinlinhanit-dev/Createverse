@@ -1,0 +1,74 @@
+[
+  {
+    "id": "hints.bridge.j1",
+    "version": 1,
+    "solution_allowed_after": 3,
+    "status": "draft",
+    "levels": [
+      { "level": 1, "type": "ask", "text_key": "hints.bridge.j1.1" },
+      { "level": 2, "type": "hint", "text_key": "hints.bridge.j1.2" },
+      { "level": 3, "type": "smaller_hint", "text_key": "hints.bridge.j1.3" },
+      { "level": 4, "type": "demonstrate", "text_key": "hints.bridge.j1.4" }
+    ]
+  },
+  {
+    "id": "hints.bridge.j2",
+    "version": 1,
+    "solution_allowed_after": 3,
+    "status": "draft",
+    "levels": [
+      { "level": 1, "type": "ask", "text_key": "hints.bridge.j2.1" },
+      { "level": 2, "type": "hint", "text_key": "hints.bridge.j2.2" },
+      { "level": 3, "type": "smaller_hint", "text_key": "hints.bridge.j2.3" },
+      { "level": 4, "type": "demonstrate", "text_key": "hints.bridge.j2.4" }
+    ]
+  },
+  {
+    "id": "hints.bridge.e1",
+    "version": 1,
+    "solution_allowed_after": 3,
+    "status": "draft",
+    "levels": [
+      { "level": 1, "type": "ask", "text_key": "hints.bridge.e1.1" },
+      { "level": 2, "type": "hint", "text_key": "hints.bridge.e1.2" },
+      { "level": 3, "type": "smaller_hint", "text_key": "hints.bridge.e1.3" },
+      { "level": 4, "type": "demonstrate", "text_key": "hints.bridge.e1.4" }
+    ]
+  },
+  {
+    "id": "hints.bridge.e2",
+    "version": 1,
+    "solution_allowed_after": 3,
+    "status": "draft",
+    "levels": [
+      { "level": 1, "type": "ask", "text_key": "hints.bridge.e2.1" },
+      { "level": 2, "type": "hint", "text_key": "hints.bridge.e2.2" },
+      { "level": 3, "type": "smaller_hint", "text_key": "hints.bridge.e2.3" },
+      { "level": 4, "type": "demonstrate", "text_key": "hints.bridge.e2.4" }
+    ]
+  },
+  {
+    "id": "hints.bridge.m1",
+    "version": 1,
+    "solution_allowed_after": 3,
+    "status": "draft",
+    "levels": [
+      { "level": 1, "type": "ask", "text_key": "hints.bridge.m1.1" },
+      { "level": 2, "type": "hint", "text_key": "hints.bridge.m1.2" },
+      { "level": 3, "type": "smaller_hint", "text_key": "hints.bridge.m1.3" },
+      { "level": 4, "type": "demonstrate", "text_key": "hints.bridge.m1.4" }
+    ]
+  },
+  {
+    "id": "hints.bridge.m2",
+    "version": 1,
+    "solution_allowed_after": 3,
+    "status": "draft",
+    "levels": [
+      { "level": 1, "type": "ask", "text_key": "hints.bridge.m2.1" },
+      { "level": 2, "type": "hint", "text_key": "hints.bridge.m2.2" },
+      { "level": 3, "type": "smaller_hint", "text_key": "hints.bridge.m2.3" },
+      { "level": 4, "type": "demonstrate", "text_key": "hints.bridge.m2.4" }
+    ]
+  }
+]

@@ -1,0 +1,76 @@
+[
+  {
+    "experience_id": "exp.bridge.j",
+    "version": 1,
+    "stage": "junior",
+    "age_range": [3, 5],
+    "difficulty": 1,
+    "learning_objectives": ["concept.force"],
+    "mission": {
+      "title_key": "exp.bridge.j.title",
+      "objective_key": "exp.bridge.j.objective"
+    },
+    "seed": 42,
+    "variables": { "gravity": 9.8 },
+    "constraints": { "max_pieces": 5, "budget": 50 },
+    "ui": {
+      "read_aloud": true,
+      "no_text_required": true,
+      "large_targets": true,
+      "force_view": false,
+      "test_log": false
+    },
+    "assessment": { "success_conditions": ["car_crosses"] },
+    "telemetry": ["pieces_placed", "run_result"]
+  },
+  {
+    "experience_id": "exp.bridge.e",
+    "version": 1,
+    "stage": "explorer",
+    "age_range": [6, 8],
+    "difficulty": 2,
+    "learning_objectives": ["concept.load"],
+    "mission": {
+      "title_key": "exp.bridge.e.title",
+      "objective_key": "exp.bridge.e.objective"
+    },
+    "seed": 42,
+    "variables": { "gravity": 9.8 },
+    "constraints": { "max_pieces": 10, "budget": 100 },
+    "ui": {
+      "read_aloud": true,
+      "no_text_required": false,
+      "large_targets": false,
+      "force_view": true,
+      "test_log": false
+    },
+    "assessment": { "success_conditions": ["car_crosses", "bridge_holds_5s"] },
+    "telemetry": ["pieces_placed", "run_result", "peak_stress"]
+  },
+  {
+    "experience_id": "exp.bridge.m",
+    "version": 1,
+    "stage": "maker",
+    "age_range": [8, 10],
+    "difficulty": 3,
+    "learning_objectives": ["concept.structure", "concept.load"],
+    "mission": {
+      "title_key": "exp.bridge.m.title",
+      "objective_key": "exp.bridge.m.objective"
+    },
+    "seed": 42,
+    "variables": { "gravity": 9.8 },
+    "constraints": { "max_pieces": 15, "budget": 120 },
+    "ui": {
+      "read_aloud": true,
+      "no_text_required": false,
+      "large_targets": false,
+      "force_view": true,
+      "test_log": true
+    },
+    "assessment": {
+      "success_conditions": ["car_crosses", "bridge_holds_5s", "within_budget"]
+    },
+    "telemetry": ["pieces_placed", "run_result", "peak_stress", "total_cost"]
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "name": "createverse",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "content:validate": "node packages/content-sdk/src/cli.ts",
+    "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm content:validate",
+    "dev": "echo \"apps/app arrives with task P1-03 — see docs/TASKS_PHASE_0_1.md\" && exit 0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^3.2.0"
+  }
+}

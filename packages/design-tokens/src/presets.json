@@ -1,0 +1,30 @@
+{
+  "junior": {
+    "fontSizeBody": "24px",
+    "fontSizeTitle": "32px",
+    "fontSizeSmall": "20px",
+    "lineHeight": 1.5,
+    "touchTarget": 64
+  },
+  "explorer": {
+    "fontSizeBody": "18px",
+    "fontSizeTitle": "26px",
+    "fontSizeSmall": "15px",
+    "lineHeight": 1.5,
+    "touchTarget": 48
+  },
+  "maker": {
+    "fontSizeBody": "16px",
+    "fontSizeTitle": "22px",
+    "fontSizeSmall": "14px",
+    "lineHeight": 1.45,
+    "touchTarget": 48
+  },
+  "parent": {
+    "fontSizeBody": "16px",
+    "fontSizeTitle": "22px",
+    "fontSizeSmall": "14px",
+    "lineHeight": 1.45,
+    "touchTarget": 48
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "id": "assess.bridge.e2",
+    "version": 1,
+    "evidence": [
+      { "signal": "experience.success", "skill": "skill.experimentation", "strength": 0.6 },
+      { "signal": "iterations>=2", "skill": "skill.experimentation", "strength": 0.3 },
+      { "signal": "reflection.complete", "concept": "concept.load", "strength": 0.4 }
+    ],
+    "mastery_rule": "sum(strength) >= 1.0 over 2 attempts"
+  }
+]

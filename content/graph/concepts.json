@@ -1,0 +1,23 @@
+[
+  {
+    "id": "concept.force",
+    "version": 1,
+    "name_key": "concept.force.name",
+    "prerequisites": [],
+    "tags": ["physics"]
+  },
+  {
+    "id": "concept.load",
+    "version": 1,
+    "name_key": "concept.load.name",
+    "prerequisites": ["concept.force"],
+    "tags": ["physics"]
+  },
+  {
+    "id": "concept.structure",
+    "version": 1,
+    "name_key": "concept.structure.name",
+    "prerequisites": ["concept.force"],
+    "tags": ["physics", "engineering"]
+  }
+]
