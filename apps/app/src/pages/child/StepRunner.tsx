@@ -28,6 +28,7 @@ import { ReadAloudButton } from "../../runner/ReadAloud.tsx";
 const REFLECT_STEP = "__reflect";
 const PORTFOLIO_STEP = "__portfolio";
 const MOVE_ON_AFTER_RUNS = 3;
+const LAB_INTERACTIVE_MODE = "interactive" as const;
 
 type LabMode = "interactive" | "headless";
 let labModeOverride: LabMode | null = null;
@@ -389,7 +390,7 @@ export default function StepRunnerPage() {
             spec={experience}
             messages={messages}
             stepId={activeStep.id}
-            mode={labModeOverride ?? "interactive"}
+            mode={labModeOverride ?? LAB_INTERACTIVE_MODE}
             initialDesign={activeStore.getLabDesign(
               activeStep.id,
               experience.experience_id,

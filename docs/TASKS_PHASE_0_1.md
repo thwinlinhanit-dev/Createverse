@@ -126,18 +126,20 @@ ACCEPTANCE CRITERIA: app installs on the real phone and tablet; shell works offl
 TEST PLAN: Playwright mobile/tablet viewports; offline shell smoke test.
 DEPENDENCIES: P0-04. APPROVAL REQUIRED: No.
 
-## P1-04 — Content loader — **TODO**
+## P1-04 — Content loader — **DONE (2026-10-08)**
 
 GOAL: Load curriculum and projects from compiled bundles with validation.
 REQUIREMENTS: bundle loader, runtime validation of bundle shape, graceful handling of a missing or corrupt bundle.
+DONE: `apps/app/scripts/gen-content.ts` compiles `content/` before dev/build and fails the build on validation errors; bundles publish to `apps/app/public/content/{locale}/{stage}.json` with a manifest for service-worker precaching; `apps/app/src/content/bundles.ts` fetches and revalidates bundles at load and raises typed errors for network, invalid JSON, invalid bundle, or locale/stage mismatch; `useBundle.ts` turns those errors into calm fallback UI. `sw.js` precaches bundles from the manifest while preserving offline install on failure.
 TEST PLAN: unit tests with corrupt bundle fixtures; bad content rejected at build and at load.
 ACCEPTANCE CRITERIA: bad content rejected at build and at load; progress references `(content_id, version)`.
 DEPENDENCIES: P0-08.
 
-## P1-05 — Project runner — **TODO**
+## P1-05 — Project runner — **DONE (2026-10-08)**
 
 GOAL: State machine: story → learn → experiment → create → reflect → portfolio.
 REQUIREMENTS: pause/resume across sessions; domain events per DATA_MODEL §3 (`child.project.started`, `child.activity.completed`, ...); works fully offline.
+DONE: `apps/app/src/progress/store.ts` local-first IndexedDB-backed progress store with append-only UUIDv7 events, idempotent replay, pause/resume instances, attempts with hints/iterations/content refs, reflection answers excluded from events, lab design snapshots keyed by spec id/version, portfolio artifact linkage, derived summary replay, and a P1-08-ready sync outbox; `ProjectDetail.tsx` entry (start/continue/first-unfinished step + draft notice) and `StepRunner.tsx` (step/lab/reflect/portfolio, bridge lab success or move-on-after-3-tries, calm load-error fallback); `recentEvents()` returns newest-first history with insertion-order tie-break under frozen/coarse clocks.
 TEST PLAN: kill the app mid-step and resume; events asserted append-only.
 ACCEPTANCE CRITERIA: a project can be paused and resumed without data loss; events are append-only.
 DEPENDENCIES: P1-04.

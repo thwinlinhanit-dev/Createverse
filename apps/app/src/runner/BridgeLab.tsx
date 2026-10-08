@@ -166,9 +166,10 @@ function isMaterialId(value: string): value is MaterialId {
 }
 
 function toDesignPieces(pieces: readonly SavedLabPiece[]): DesignPiece[] {
-  return pieces
-    .filter((p) => isPieceType(p.pieceType) && isMaterialId(p.material))
-    .map((p) => ({
+  const out: DesignPiece[] = [];
+  for (const p of pieces) {
+    if (!isPieceType(p.pieceType) || !isMaterialId(p.material)) continue;
+    out.push({
       id: p.id,
       pieceType: p.pieceType,
       material: p.material,
@@ -176,7 +177,9 @@ function toDesignPieces(pieces: readonly SavedLabPiece[]): DesignPiece[] {
       y1: p.y1,
       x2: p.x2,
       y2: p.y2,
-    }));
+    });
+  }
+  return out;
 }
 
 export default function BridgeLab(props: LabProps) {
@@ -391,7 +394,8 @@ export default function BridgeLab(props: LabProps) {
       runtime?.dispose();
     };
     // Re-create only when the step or spec changes; selection state lives above.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // exhaustive-deps: init/props.* intentionally omitted (props object identity
+    // changes every render and must not restart the runtime).
   }, [props.spec.experience_id, props.stepId, props.mode]);
 
   const forceViewRef = useRef(forceView);

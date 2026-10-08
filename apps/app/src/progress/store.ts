@@ -703,7 +703,17 @@ export class ProgressStore {
   recentEvents(limit: number): readonly ProgressEvent[] {
     this.ensureLoaded();
     return [...this.events]
-      .sort((a, b) => (a.occurred_at < b.occurred_at ? 1 : a.occurred_at > b.occurred_at ? -1 : 0))
+      .map((event, index) => ({ event, index }))
+      .sort((a, b) =>
+        a.event.occurred_at < b.event.occurred_at
+          ? 1
+          : a.event.occurred_at > b.event.occurred_at
+            ? -1
+            : // Same clock tick (frozen test clocks, coarse clocks): later
+              // appends are newer, so higher insertion indexes come first.
+              b.index - a.index,
+      )
+      .map(({ event }) => event)
       .slice(0, Math.max(0, limit));
   }
 
