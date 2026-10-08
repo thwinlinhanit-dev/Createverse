@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Createverse UI</title>
+<style>
+:root {
+  --cv-color-accent: #FFC857;
+  --cv-color-bg: #FFF9F0;
+  --cv-color-border: #7A808C;
+  --cv-color-danger: #B3261E;
+  --cv-color-focus-ring: #1F5FBF;
+  --cv-color-info: #1F5FBF;
+  --cv-color-on-accent: #1F2430;
+  --cv-color-on-primary: #FFFFFF;
+  --cv-color-primary: #0F766E;
+  --cv-color-stress-compression: #1F5FBF;
+  --cv-color-stress-tension: #C2410C;
+  --cv-color-success: #1B7F4D;
+  --cv-color-surface: #FFFFFF;
+  --cv-color-surface-alt: #F5EFE4;
+  --cv-color-text: #1F2430;
+  --cv-color-text-muted: #4A5160;
+  --cv-color-warning-text: #8A5A00;
+  --cv-elevation-0: none;
+  --cv-elevation-1: 0 1px 2px rgba(31, 36, 48, 0.10), 0 4px 10px rgba(31, 36, 48, 0.06);
+  --cv-elevation-2: 0 2px 4px rgba(31, 36, 48, 0.12), 0 8px 24px rgba(31, 36, 48, 0.10);
+  --cv-font: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --cv-motion-base: 200ms;
+  --cv-motion-easing: ease-out;
+  --cv-motion-fast: 120ms;
+  --cv-motion-slow: 320ms;
+  --cv-radius-full: 999px;
+  --cv-radius-lg: 24px;
+  --cv-radius-md: 16px;
+  --cv-radius-sm: 8px;
+  --cv-space-1: 4px;
+  --cv-space-2: 8px;
+  --cv-space-3: 12px;
+  --cv-space-4: 16px;
+  --cv-space-5: 24px;
+  --cv-space-6: 32px;
+  --cv-space-7: 48px;
+  --cv-space-8: 64px;
+}
+[data-stage="junior"] {
+  --cv-font-size-body: 24px;
+  --cv-font-size-title: 32px;
+  --cv-font-size-small: 20px;
+  --cv-line-height: 1.5;
+  --cv-touch-target: 64px;
+}
+[data-stage="explorer"] {
+  --cv-font-size-body: 18px;
+  --cv-font-size-title: 26px;
+  --cv-font-size-small: 15px;
+  --cv-line-height: 1.5;
+  --cv-touch-target: 56px;
+}
+[data-stage="maker"] {
+  --cv-font-size-body: 16px;
+  --cv-font-size-title: 22px;
+  --cv-font-size-small: 14px;
+  --cv-line-height: 1.45;
+  --cv-touch-target: 48px;
+}
+[data-stage="parent"] {
+  --cv-font-size-body: 16px;
+  --cv-font-size-title: 22px;
+  --cv-font-size-small: 14px;
+  --cv-line-height: 1.45;
+  --cv-touch-target: 48px;
+}
+
+[data-stage="junior"] {
+  --cv-component-radius: var(--cv-radius-lg);
+  --cv-control-radius: var(--cv-radius-full);
+}
+[data-stage="explorer"] {
+  --cv-component-radius: var(--cv-radius-lg);
+  --cv-control-radius: var(--cv-radius-lg);
+}
+[data-stage="maker"] {
+  --cv-component-radius: var(--cv-radius-md);
+  --cv-control-radius: var(--cv-radius-md);
+}
+[data-stage="parent"] {
+  --cv-component-radius: var(--cv-radius-md);
+  --cv-control-radius: var(--cv-radius-md);
+}
+
+
+.cv-button, .cv-card, .cv-chip, .cv-tabs, .cv-dialog, .cv-hint,
+.cv-portfolio, .cv-parent-gate, .cv-safety {
+  box-sizing: border-box;
+  font-family: var(--cv-font);
+  line-height: var(--cv-line-height);
+}
+:focus-visible {
+  outline: 3px solid var(--cv-color-focus-ring);
+  outline-offset: 2px;
+}
+.cv-icon {
+  display: inline-block;
+  flex: none;
+  width: 1.25em;
+  height: 1.25em;
+}
+
+
+.cv-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cv-space-2);
+  min-height: var(--cv-touch-target);
+  min-width: var(--cv-touch-target);
+  padding: var(--cv-space-2) var(--cv-space-5);
+  border: 2px solid transparent;
+  border-radius: var(--cv-control-radius, var(--cv-radius-md));
+  background: var(--cv-color-primary);
+  color: var(--cv-color-on-primary);
+  font-size: var(--cv-font-size-body);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--cv-motion-fast) var(--cv-motion-easing),
+    color var(--cv-motion-fast) var(--cv-motion-easing);
+}
+.cv-button--secondary {
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text);
+  border-color: var(--cv-color-border);
+}
+.cv-button:active:not(:disabled) {
+  background: var(--cv-color-accent);
+  color: var(--cv-color-on-accent);
+}
+.cv-button--secondary:active:not(:disabled) {
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text);
+  border-color: var(--cv-color-text);
+}
+.cv-button:disabled {
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text-muted);
+  border-color: var(--cv-color-border);
+  cursor: default;
+}
+.cv-button[aria-busy="true"] {
+  cursor: progress;
+}
+
+
+.cv-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cv-space-2);
+  min-height: var(--cv-touch-target);
+  padding: var(--cv-space-2) var(--cv-space-4);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-control-radius, var(--cv-radius-full));
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text);
+  font-size: var(--cv-font-size-small);
+}
+.cv-chip--selected {
+  background: var(--cv-color-primary);
+  color: var(--cv-color-on-primary);
+  border-color: var(--cv-color-primary);
+  font-weight: 600;
+}
+
+
+.cv-card {
+  padding: var(--cv-space-5);
+  border-radius: var(--cv-component-radius, var(--cv-radius-lg));
+  background: var(--cv-color-surface);
+  color: var(--cv-color-text);
+  box-shadow: var(--cv-elevation-1);
+  font-size: var(--cv-font-size-body);
+}
+.cv-card h2 {
+  margin: 0 0 var(--cv-space-2);
+  font-size: var(--cv-font-size-title);
+}
+.cv-card p {
+  margin: 0;
+}
+
+
+.cv-tabs {
+  display: flex;
+  gap: var(--cv-space-2);
+  padding: var(--cv-space-1);
+  border-radius: var(--cv-control-radius, var(--cv-radius-md));
+  background: var(--cv-color-surface-alt);
+}
+.cv-tabs button {
+  flex: 1;
+  min-height: var(--cv-touch-target);
+  border: 2px solid transparent;
+  border-radius: var(--cv-control-radius, var(--cv-radius-md));
+  background: transparent;
+  color: var(--cv-color-text);
+  font-family: var(--cv-font);
+  font-size: var(--cv-font-size-small);
+  cursor: pointer;
+}
+.cv-tabs button[aria-selected="true"] {
+  background: var(--cv-color-surface);
+  border-color: var(--cv-color-primary);
+  color: var(--cv-color-primary);
+  font-weight: 600;
+}
+
+
+.cv-dialog {
+  display: grid;
+  gap: var(--cv-space-3);
+  max-width: 32rem;
+  padding: var(--cv-space-5);
+  border-radius: var(--cv-component-radius, var(--cv-radius-lg));
+  background: var(--cv-color-surface);
+  color: var(--cv-color-text);
+  box-shadow: var(--cv-elevation-2);
+  font-size: var(--cv-font-size-body);
+}
+.cv-dialog p {
+  margin: 0;
+}
+.cv-dialog h2 {
+  margin: 0;
+  font-size: var(--cv-font-size-title);
+}
+
+
+.cv-steps {
+  display: block;
+  width: 100%;
+  height: var(--cv-space-3);
+  border-radius: var(--cv-radius-full);
+  background: var(--cv-color-surface-alt);
+  appearance: none;
+}
+.cv-steps::-webkit-progress-bar {
+  border-radius: var(--cv-radius-full);
+  background: var(--cv-color-surface-alt);
+}
+.cv-steps::-webkit-progress-value {
+  border-radius: var(--cv-radius-full);
+  background: var(--cv-color-primary);
+}
+.cv-steps::-moz-progress-bar {
+  border-radius: var(--cv-radius-full);
+  background: var(--cv-color-primary);
+}
+
+
+.cv-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--cv-space-2);
+  min-height: var(--cv-touch-target);
+  min-width: var(--cv-touch-target);
+  padding: var(--cv-space-2) var(--cv-space-4);
+  border: 2px solid var(--cv-color-primary);
+  border-radius: var(--cv-control-radius, var(--cv-radius-full));
+  background: var(--cv-color-accent);
+  color: var(--cv-color-on-accent);
+  font-family: var(--cv-font);
+  font-size: var(--cv-font-size-body);
+  font-weight: 600;
+  cursor: pointer;
+}
+.cv-hint:disabled {
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text-muted);
+  border-color: var(--cv-color-border);
+  cursor: default;
+}
+
+
+.cv-portfolio {
+  display: grid;
+  gap: var(--cv-space-2);
+  padding: var(--cv-space-5);
+  border-radius: var(--cv-component-radius, var(--cv-radius-lg));
+  background: var(--cv-color-surface);
+  color: var(--cv-color-text);
+  box-shadow: var(--cv-elevation-1);
+  font-size: var(--cv-font-size-body);
+}
+.cv-portfolio h3 {
+  margin: 0;
+  font-size: var(--cv-font-size-title);
+}
+.cv-portfolio time {
+  color: var(--cv-color-text-muted);
+  font-size: var(--cv-font-size-small);
+}
+.cv-portfolio p {
+  margin: 0;
+}
+
+
+.cv-parent-gate {
+  display: grid;
+  gap: var(--cv-space-3);
+  padding: var(--cv-space-5);
+  border: 2px solid var(--cv-color-info);
+  border-radius: var(--cv-component-radius, var(--cv-radius-lg));
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text);
+  font-size: var(--cv-font-size-body);
+}
+.cv-parent-gate p {
+  display: flex;
+  align-items: center;
+  gap: var(--cv-space-2);
+  margin: 0;
+}
+
+
+.cv-safety {
+  display: grid;
+  gap: var(--cv-space-2);
+  padding: var(--cv-space-4) var(--cv-space-5);
+  border: 2px solid var(--cv-color-info);
+  border-radius: var(--cv-component-radius, var(--cv-radius-md));
+  background: var(--cv-color-surface);
+  color: var(--cv-color-text);
+  font-size: var(--cv-font-size-body);
+}
+.cv-safety p {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cv-space-2);
+  margin: 0;
+}
+.cv-safety--warning {
+  border-color: var(--cv-color-warning-text);
+  background: var(--cv-color-surface-alt);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-button, .cv-hint, .cv-chip, .cv-tabs button {
+    transition: none;
+  }
+}
+
+
+[hidden] {
+  display: none !important;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body.pv-body {
+  margin: 0;
+  background: var(--cv-color-bg);
+  color: var(--cv-color-text);
+  font-family: var(--cv-font);
+  font-size: var(--cv-font-size-body);
+  line-height: var(--cv-line-height);
+}
+.pv-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--cv-color-surface);
+  border-bottom: 2px solid var(--cv-color-border);
+  box-shadow: var(--cv-elevation-1);
+}
+.pv-header-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cv-space-4);
+  align-items: center;
+  justify-content: space-between;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--cv-space-4) var(--cv-space-5);
+}
+.pv-brand h1 {
+  margin: 0;
+  font-size: var(--cv-font-size-title);
+  line-height: 1.2;
+}
+.pv-tag {
+  margin: var(--cv-space-1) 0 0;
+  color: var(--cv-color-text-muted);
+  font-size: var(--cv-font-size-small);
+}
+.pv-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cv-space-5);
+}
+.pv-control {
+  display: grid;
+  gap: var(--cv-space-1);
+}
+.pv-control-label {
+  color: var(--cv-color-text-muted);
+  font-size: var(--cv-font-size-small);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.pv-segment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cv-space-2);
+}
+.pv-segment button {
+  min-height: var(--cv-touch-target);
+  padding: var(--cv-space-2) var(--cv-space-4);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-radius-full);
+  background: var(--cv-color-surface-alt);
+  color: var(--cv-color-text);
+  font-family: var(--cv-font);
+  font-size: var(--cv-font-size-small);
+  font-weight: 600;
+  cursor: pointer;
+}
+.pv-segment button:hover {
+  border-color: var(--cv-color-text);
+}
+.pv-segment button[aria-pressed="true"] {
+  background: var(--cv-color-primary);
+  border-color: var(--cv-color-primary);
+  color: var(--cv-color-on-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.pv-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cv-space-2);
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--cv-space-4) var(--cv-space-5) 0;
+}
+.pv-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cv-touch-target);
+  padding: var(--cv-space-2) var(--cv-space-4);
+  border-radius: var(--cv-radius-full);
+  color: var(--cv-color-text);
+  font-size: var(--cv-font-size-small);
+  font-weight: 600;
+  text-decoration: none;
+}
+.pv-nav a:hover {
+  background: var(--cv-color-surface-alt);
+}
+.pv-main {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--cv-space-5);
+}
+.pv-gallery > .pv-section-head {
+  margin-bottom: var(--cv-space-5);
+}
+.pv-block {
+  margin-bottom: var(--cv-space-6);
+  padding: var(--cv-space-5);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-component-radius, var(--cv-radius-lg));
+  background: var(--cv-color-surface);
+  box-shadow: var(--cv-elevation-1);
+  scroll-margin-top: calc(var(--cv-touch-target) + var(--cv-space-8) + var(--cv-space-4));
+}
+.pv-section-head {
+  display: grid;
+  gap: var(--cv-space-2);
+  margin-bottom: var(--cv-space-5);
+}
+.pv-section-head h2 {
+  margin: 0;
+  font-size: var(--cv-font-size-title);
+}
+.pv-note {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--cv-color-text-muted);
+  font-size: var(--cv-font-size-small);
+}
+.pv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--cv-space-4);
+}
+.pv-col {
+  display: contents;
+}
+.pv-field {
+  display: grid;
+  gap: var(--cv-space-2);
+  align-content: start;
+  margin: 0;
+  padding: var(--cv-space-4);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-component-radius, var(--cv-radius-lg));
+  background: var(--cv-color-surface-alt);
+}
+.pv-field figcaption {
+  color: var(--cv-color-text-muted);
+  font-size: var(--cv-font-size-small);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.pv-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cv-space-3);
+  align-items: center;
+}
+.pv-icon-demo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cv-space-1);
+  font-size: var(--cv-font-size-small);
+}
+.pv-footer {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--cv-space-5);
+  border-top: 2px solid var(--cv-color-border);
+  color: var(--cv-color-text-muted);
+  font-size: var(--cv-font-size-small);
+}
+@media (max-width: 40rem) {
+  .pv-header-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+</style>
+</head>
+<body class="pv-body" data-stage="junior">
+<header class="pv-header">
+<div class="pv-header-inner">
+<div class="pv-brand">
+<h1><span lang="en" data-lang-block="en">Createverse UI</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>Createverse 介面</span></h1>
+<p class="pv-tag"><span lang="en" data-lang-block="en">Component preview · P0-04</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>元件預覽 · P0-04</span></p>
+</div>
+<div class="pv-controls">
+<div class="pv-control">
+<span class="pv-control-label" id="pv-preset-label"><span lang="en" data-lang-block="en">Preset</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>階段</span></span>
+<div class="pv-segment" role="group" aria-labelledby="pv-preset-label"><button type="button" data-set-stage="junior" aria-pressed="true"><span lang="en" data-lang-block="en">Junior (3–5)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>幼兒（3–5 歲）</span></button><button type="button" data-set-stage="explorer" aria-pressed="false"><span lang="en" data-lang-block="en">Explorer (6–8)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>探索者（6–8 歲）</span></button><button type="button" data-set-stage="maker" aria-pressed="false"><span lang="en" data-lang-block="en">Maker (8–10)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>創作者（8–10 歲）</span></button><button type="button" data-set-stage="parent" aria-pressed="false"><span lang="en" data-lang-block="en">Parent</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>家長</span></button></div>
+</div>
+<div class="pv-control">
+<span class="pv-control-label" id="pv-lang-label"><span lang="en" data-lang-block="en">Language</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>語言</span></span>
+<div class="pv-segment" role="group" aria-labelledby="pv-lang-label">
+<button type="button" data-set-lang="en" aria-pressed="true">English</button>
+<button type="button" data-set-lang="zh-Hant" aria-pressed="false">繁體中文</button>
+</div>
+</div>
+</div>
+</div>
+</header>
+<nav class="pv-nav" aria-label="Page sections"><a href="#pv-live"><span lang="en" data-lang-block="en">Live demo</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>即時示範</span></a><a href="#pv-junior"><span lang="en" data-lang-block="en">Junior (3–5)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>幼兒（3–5 歲）</span></a><a href="#pv-explorer"><span lang="en" data-lang-block="en">Explorer (6–8)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>探索者（6–8 歲）</span></a><a href="#pv-maker"><span lang="en" data-lang-block="en">Maker (8–10)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>創作者（8–10 歲）</span></a><a href="#pv-parent"><span lang="en" data-lang-block="en">Parent</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>家長</span></a></nav>
+<main class="pv-main">
+<section class="pv-block" id="pv-live" data-stage="junior" lang="en" aria-labelledby="pv-live-h">
+<div class="pv-section-head">
+<h2 id="pv-live-h"><span lang="en" data-lang-block="en">Live demo</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>即時示範</span></h2>
+<p class="pv-note"><span lang="en" data-lang-block="en">Switch the preset and language in the header — this block follows your selection.</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>在頁首切換階段與語言，此區塊會跟著更新。</span></p>
+</div>
+<div class="pv-grid" lang="en" data-lang-block="en"><figure class="pv-field"><figcaption>Button — primary</figcaption><button type="button" class="cv-button">Start</button></figure>
+<figure class="pv-field"><figcaption>Button — secondary</figcaption><button type="button" class="cv-button cv-button--secondary">Try again</button></figure>
+<figure class="pv-field"><figcaption>Button — disabled</figcaption><button type="button" class="cv-button" disabled>Continue</button></figure>
+<figure class="pv-field"><figcaption>Button — loading</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>Saving…</button></figure>
+<figure class="pv-field"><figcaption>Icons — each with an accessible name</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Home"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>Home</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Explore"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>Explore</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Create"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>Create</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Projects"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>Projects</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Me"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>Me</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Hint"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>Hint</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Read aloud"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>Read aloud</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Play"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>Play</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Undo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>Undo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Redo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>Redo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Locked"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>Locked</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Close"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>Close</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Done"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>Done</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>Warning</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>Information</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Back"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>Back</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Story"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>Story</span></span></div></figure>
+<figure class="pv-field"><figcaption>Card</figcaption><section class="cv-card"><h2>Build a Bridge</h2><p>Put the planks together so the toy car can cross.</p></section></figure>
+<figure class="pv-field"><figcaption>Chip (normal and selected)</figcaption><div class="pv-row"><span class="cv-chip">Wood</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>Stone</span></div></figure>
+<figure class="pv-field"><figcaption>Tabs</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">Story</button><button type="button" role="tab" aria-selected="true">Learn</button><button type="button" role="tab" aria-selected="false">Create</button></div></figure>
+<figure class="pv-field"><figcaption>Dialog</figcaption><div class="cv-dialog" role="dialog" aria-label="Save your work?"><h2>Save your work?</h2><p>We can keep this and take a break.</p></div></figure>
+<figure class="pv-field"><figcaption>Step progress</figcaption><progress class="cv-steps" max="4" value="2" aria-label="Step 2 of 4"></progress></figure>
+<figure class="pv-field"><figcaption>Mentor hint (icon + label, no character)</figcaption><button type="button" class="cv-hint" aria-label="Get a hint"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>Hint</button></figure>
+<figure class="pv-field"><figcaption>Portfolio card</figcaption><article class="cv-portfolio"><h3>My bridge</h3><time>2026-10-06</time><p>It held for 8 seconds.</p></article></figure>
+<figure class="pv-field"><figcaption>Parent gate</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>Changing this setting needs a grown-up.</p><button type="button">Confirm with passkey</button></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — info</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>This activity uses small parts.</p><p>Ask a grown-up to join you.</p></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — warning</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>This activity never uses real tools.</p><p>Build only with the pieces on screen.</p></div></figure></div>
+<div class="pv-grid" lang="zh-Hant" data-lang-block="zh-Hant" hidden><figure class="pv-field"><figcaption>按鈕 — 主要</figcaption><button type="button" class="cv-button">開始</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 次要</figcaption><button type="button" class="cv-button cv-button--secondary">再試一次</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 停用</figcaption><button type="button" class="cv-button" disabled>繼續</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 載入中</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>保存中…</button></figure>
+<figure class="pv-field"><figcaption>圖示 — 每個都有無障礙名稱</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="首頁"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>首頁</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="探索"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>探索</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="創作"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>創作</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="作品"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>作品</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="我"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>我</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="提示"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>提示</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="朗讀"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>朗讀</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="播放"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>播放</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="復原"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>復原</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="重做"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>重做</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="已鎖定"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>已鎖定</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="關閉"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>關閉</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="完成"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>完成</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>注意</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>資訊</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="返回"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>返回</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="故事"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>故事</span></span></div></figure>
+<figure class="pv-field"><figcaption>卡片</figcaption><section class="cv-card"><h2>蓋一座橋</h2><p>把木板拼起來，讓玩具車順利通過。</p></section></figure>
+<figure class="pv-field"><figcaption>標籤（一般與已選取）</figcaption><div class="pv-row"><span class="cv-chip">木頭</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>石頭</span></div></figure>
+<figure class="pv-field"><figcaption>分頁</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">故事</button><button type="button" role="tab" aria-selected="true">學習</button><button type="button" role="tab" aria-selected="false">創作</button></div></figure>
+<figure class="pv-field"><figcaption>對話框</figcaption><div class="cv-dialog" role="dialog" aria-label="要保存作品嗎？"><h2>要保存作品嗎？</h2><p>我們可以先保存作品，休息一下。</p></div></figure>
+<figure class="pv-field"><figcaption>步驟進度</figcaption><progress class="cv-steps" max="4" value="2" aria-label="第 2 步，共 4 步"></progress></figure>
+<figure class="pv-field"><figcaption>導師提示（圖示＋文字，不扮角色）</figcaption><button type="button" class="cv-hint" aria-label="取得提示"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>提示</button></figure>
+<figure class="pv-field"><figcaption>作品卡</figcaption><article class="cv-portfolio"><h3>我的橋</h3><time>2026-10-06</time><p>它撐住了 8 秒。</p></article></figure>
+<figure class="pv-field"><figcaption>家長確認</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>變更這個設定需要家長確認。</p><button type="button">用通行密鑰確認</button></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 資訊</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>這個活動會用到小零件。</p><p>請家長陪你一起進行。</p></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 注意</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>這個活動不會用到真正的工具。</p><p>只用畫面上的積木來搭建。</p></div></figure></div>
+</section>
+<section class="pv-gallery" aria-labelledby="pv-gallery-h">
+<div class="pv-section-head">
+<h2 id="pv-gallery-h"><span lang="en" data-lang-block="en">All presets</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>所有階段</span></h2>
+<p class="pv-note"><span lang="en" data-lang-block="en">Every component in each age preset. Use the language switch to view English or 繁體中文.</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>每個階段的所有元件。可用語言切換查看英文或繁體中文。</span></p>
+</div>
+<section class="pv-block" id="pv-junior" data-stage="junior" aria-labelledby="pv-junior-h"><div class="pv-section-head"><h2 id="pv-junior-h"><span lang="en" data-lang-block="en">Junior (3–5)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>幼兒（3–5 歲）</span></h2></div><div class="pv-grid"><div class="pv-col" lang="en" data-lang-block="en"><figure class="pv-field"><figcaption>Button — primary</figcaption><button type="button" class="cv-button">Start</button></figure>
+<figure class="pv-field"><figcaption>Button — secondary</figcaption><button type="button" class="cv-button cv-button--secondary">Try again</button></figure>
+<figure class="pv-field"><figcaption>Button — disabled</figcaption><button type="button" class="cv-button" disabled>Continue</button></figure>
+<figure class="pv-field"><figcaption>Button — loading</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>Saving…</button></figure>
+<figure class="pv-field"><figcaption>Icons — each with an accessible name</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Home"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>Home</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Explore"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>Explore</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Create"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>Create</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Projects"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>Projects</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Me"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>Me</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Hint"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>Hint</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Read aloud"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>Read aloud</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Play"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>Play</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Undo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>Undo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Redo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>Redo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Locked"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>Locked</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Close"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>Close</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Done"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>Done</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>Warning</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>Information</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Back"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>Back</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Story"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>Story</span></span></div></figure>
+<figure class="pv-field"><figcaption>Card</figcaption><section class="cv-card"><h2>Build a Bridge</h2><p>Put the planks together so the toy car can cross.</p></section></figure>
+<figure class="pv-field"><figcaption>Chip (normal and selected)</figcaption><div class="pv-row"><span class="cv-chip">Wood</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>Stone</span></div></figure>
+<figure class="pv-field"><figcaption>Tabs</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">Story</button><button type="button" role="tab" aria-selected="true">Learn</button><button type="button" role="tab" aria-selected="false">Create</button></div></figure>
+<figure class="pv-field"><figcaption>Dialog</figcaption><div class="cv-dialog" role="dialog" aria-label="Save your work?"><h2>Save your work?</h2><p>We can keep this and take a break.</p></div></figure>
+<figure class="pv-field"><figcaption>Step progress</figcaption><progress class="cv-steps" max="4" value="2" aria-label="Step 2 of 4"></progress></figure>
+<figure class="pv-field"><figcaption>Mentor hint (icon + label, no character)</figcaption><button type="button" class="cv-hint" aria-label="Get a hint"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>Hint</button></figure>
+<figure class="pv-field"><figcaption>Portfolio card</figcaption><article class="cv-portfolio"><h3>My bridge</h3><time>2026-10-06</time><p>It held for 8 seconds.</p></article></figure>
+<figure class="pv-field"><figcaption>Parent gate</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>Changing this setting needs a grown-up.</p><button type="button">Confirm with passkey</button></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — info</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>This activity uses small parts.</p><p>Ask a grown-up to join you.</p></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — warning</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>This activity never uses real tools.</p><p>Build only with the pieces on screen.</p></div></figure></div><div class="pv-col" lang="zh-Hant" data-lang-block="zh-Hant" hidden><figure class="pv-field"><figcaption>按鈕 — 主要</figcaption><button type="button" class="cv-button">開始</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 次要</figcaption><button type="button" class="cv-button cv-button--secondary">再試一次</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 停用</figcaption><button type="button" class="cv-button" disabled>繼續</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 載入中</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>保存中…</button></figure>
+<figure class="pv-field"><figcaption>圖示 — 每個都有無障礙名稱</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="首頁"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>首頁</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="探索"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>探索</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="創作"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>創作</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="作品"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>作品</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="我"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>我</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="提示"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>提示</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="朗讀"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>朗讀</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="播放"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>播放</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="復原"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>復原</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="重做"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>重做</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="已鎖定"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>已鎖定</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="關閉"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>關閉</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="完成"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>完成</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>注意</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>資訊</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="返回"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>返回</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="故事"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>故事</span></span></div></figure>
+<figure class="pv-field"><figcaption>卡片</figcaption><section class="cv-card"><h2>蓋一座橋</h2><p>把木板拼起來，讓玩具車順利通過。</p></section></figure>
+<figure class="pv-field"><figcaption>標籤（一般與已選取）</figcaption><div class="pv-row"><span class="cv-chip">木頭</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>石頭</span></div></figure>
+<figure class="pv-field"><figcaption>分頁</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">故事</button><button type="button" role="tab" aria-selected="true">學習</button><button type="button" role="tab" aria-selected="false">創作</button></div></figure>
+<figure class="pv-field"><figcaption>對話框</figcaption><div class="cv-dialog" role="dialog" aria-label="要保存作品嗎？"><h2>要保存作品嗎？</h2><p>我們可以先保存作品，休息一下。</p></div></figure>
+<figure class="pv-field"><figcaption>步驟進度</figcaption><progress class="cv-steps" max="4" value="2" aria-label="第 2 步，共 4 步"></progress></figure>
+<figure class="pv-field"><figcaption>導師提示（圖示＋文字，不扮角色）</figcaption><button type="button" class="cv-hint" aria-label="取得提示"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>提示</button></figure>
+<figure class="pv-field"><figcaption>作品卡</figcaption><article class="cv-portfolio"><h3>我的橋</h3><time>2026-10-06</time><p>它撐住了 8 秒。</p></article></figure>
+<figure class="pv-field"><figcaption>家長確認</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>變更這個設定需要家長確認。</p><button type="button">用通行密鑰確認</button></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 資訊</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>這個活動會用到小零件。</p><p>請家長陪你一起進行。</p></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 注意</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>這個活動不會用到真正的工具。</p><p>只用畫面上的積木來搭建。</p></div></figure></div></div></section>
+<section class="pv-block" id="pv-explorer" data-stage="explorer" aria-labelledby="pv-explorer-h"><div class="pv-section-head"><h2 id="pv-explorer-h"><span lang="en" data-lang-block="en">Explorer (6–8)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>探索者（6–8 歲）</span></h2></div><div class="pv-grid"><div class="pv-col" lang="en" data-lang-block="en"><figure class="pv-field"><figcaption>Button — primary</figcaption><button type="button" class="cv-button">Start</button></figure>
+<figure class="pv-field"><figcaption>Button — secondary</figcaption><button type="button" class="cv-button cv-button--secondary">Try again</button></figure>
+<figure class="pv-field"><figcaption>Button — disabled</figcaption><button type="button" class="cv-button" disabled>Continue</button></figure>
+<figure class="pv-field"><figcaption>Button — loading</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>Saving…</button></figure>
+<figure class="pv-field"><figcaption>Icons — each with an accessible name</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Home"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>Home</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Explore"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>Explore</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Create"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>Create</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Projects"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>Projects</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Me"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>Me</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Hint"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>Hint</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Read aloud"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>Read aloud</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Play"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>Play</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Undo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>Undo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Redo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>Redo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Locked"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>Locked</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Close"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>Close</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Done"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>Done</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>Warning</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>Information</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Back"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>Back</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Story"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>Story</span></span></div></figure>
+<figure class="pv-field"><figcaption>Card</figcaption><section class="cv-card"><h2>Build a Bridge</h2><p>Put the planks together so the toy car can cross.</p></section></figure>
+<figure class="pv-field"><figcaption>Chip (normal and selected)</figcaption><div class="pv-row"><span class="cv-chip">Wood</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>Stone</span></div></figure>
+<figure class="pv-field"><figcaption>Tabs</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">Story</button><button type="button" role="tab" aria-selected="true">Learn</button><button type="button" role="tab" aria-selected="false">Create</button></div></figure>
+<figure class="pv-field"><figcaption>Dialog</figcaption><div class="cv-dialog" role="dialog" aria-label="Save your work?"><h2>Save your work?</h2><p>We can keep this and take a break.</p></div></figure>
+<figure class="pv-field"><figcaption>Step progress</figcaption><progress class="cv-steps" max="4" value="2" aria-label="Step 2 of 4"></progress></figure>
+<figure class="pv-field"><figcaption>Mentor hint (icon + label, no character)</figcaption><button type="button" class="cv-hint" aria-label="Get a hint"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>Hint</button></figure>
+<figure class="pv-field"><figcaption>Portfolio card</figcaption><article class="cv-portfolio"><h3>My bridge</h3><time>2026-10-06</time><p>It held for 8 seconds.</p></article></figure>
+<figure class="pv-field"><figcaption>Parent gate</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>Changing this setting needs a grown-up.</p><button type="button">Confirm with passkey</button></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — info</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>This activity uses small parts.</p><p>Ask a grown-up to join you.</p></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — warning</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>This activity never uses real tools.</p><p>Build only with the pieces on screen.</p></div></figure></div><div class="pv-col" lang="zh-Hant" data-lang-block="zh-Hant" hidden><figure class="pv-field"><figcaption>按鈕 — 主要</figcaption><button type="button" class="cv-button">開始</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 次要</figcaption><button type="button" class="cv-button cv-button--secondary">再試一次</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 停用</figcaption><button type="button" class="cv-button" disabled>繼續</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 載入中</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>保存中…</button></figure>
+<figure class="pv-field"><figcaption>圖示 — 每個都有無障礙名稱</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="首頁"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>首頁</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="探索"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>探索</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="創作"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>創作</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="作品"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>作品</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="我"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>我</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="提示"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>提示</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="朗讀"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>朗讀</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="播放"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>播放</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="復原"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>復原</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="重做"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>重做</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="已鎖定"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>已鎖定</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="關閉"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>關閉</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="完成"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>完成</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>注意</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>資訊</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="返回"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>返回</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="故事"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>故事</span></span></div></figure>
+<figure class="pv-field"><figcaption>卡片</figcaption><section class="cv-card"><h2>蓋一座橋</h2><p>把木板拼起來，讓玩具車順利通過。</p></section></figure>
+<figure class="pv-field"><figcaption>標籤（一般與已選取）</figcaption><div class="pv-row"><span class="cv-chip">木頭</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>石頭</span></div></figure>
+<figure class="pv-field"><figcaption>分頁</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">故事</button><button type="button" role="tab" aria-selected="true">學習</button><button type="button" role="tab" aria-selected="false">創作</button></div></figure>
+<figure class="pv-field"><figcaption>對話框</figcaption><div class="cv-dialog" role="dialog" aria-label="要保存作品嗎？"><h2>要保存作品嗎？</h2><p>我們可以先保存作品，休息一下。</p></div></figure>
+<figure class="pv-field"><figcaption>步驟進度</figcaption><progress class="cv-steps" max="4" value="2" aria-label="第 2 步，共 4 步"></progress></figure>
+<figure class="pv-field"><figcaption>導師提示（圖示＋文字，不扮角色）</figcaption><button type="button" class="cv-hint" aria-label="取得提示"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>提示</button></figure>
+<figure class="pv-field"><figcaption>作品卡</figcaption><article class="cv-portfolio"><h3>我的橋</h3><time>2026-10-06</time><p>它撐住了 8 秒。</p></article></figure>
+<figure class="pv-field"><figcaption>家長確認</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>變更這個設定需要家長確認。</p><button type="button">用通行密鑰確認</button></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 資訊</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>這個活動會用到小零件。</p><p>請家長陪你一起進行。</p></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 注意</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>這個活動不會用到真正的工具。</p><p>只用畫面上的積木來搭建。</p></div></figure></div></div></section>
+<section class="pv-block" id="pv-maker" data-stage="maker" aria-labelledby="pv-maker-h"><div class="pv-section-head"><h2 id="pv-maker-h"><span lang="en" data-lang-block="en">Maker (8–10)</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>創作者（8–10 歲）</span></h2></div><div class="pv-grid"><div class="pv-col" lang="en" data-lang-block="en"><figure class="pv-field"><figcaption>Button — primary</figcaption><button type="button" class="cv-button">Start</button></figure>
+<figure class="pv-field"><figcaption>Button — secondary</figcaption><button type="button" class="cv-button cv-button--secondary">Try again</button></figure>
+<figure class="pv-field"><figcaption>Button — disabled</figcaption><button type="button" class="cv-button" disabled>Continue</button></figure>
+<figure class="pv-field"><figcaption>Button — loading</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>Saving…</button></figure>
+<figure class="pv-field"><figcaption>Icons — each with an accessible name</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Home"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>Home</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Explore"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>Explore</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Create"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>Create</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Projects"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>Projects</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Me"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>Me</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Hint"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>Hint</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Read aloud"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>Read aloud</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Play"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>Play</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Undo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>Undo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Redo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>Redo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Locked"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>Locked</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Close"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>Close</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Done"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>Done</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>Warning</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>Information</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Back"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>Back</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Story"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>Story</span></span></div></figure>
+<figure class="pv-field"><figcaption>Card</figcaption><section class="cv-card"><h2>Build a Bridge</h2><p>Put the planks together so the toy car can cross.</p></section></figure>
+<figure class="pv-field"><figcaption>Chip (normal and selected)</figcaption><div class="pv-row"><span class="cv-chip">Wood</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>Stone</span></div></figure>
+<figure class="pv-field"><figcaption>Tabs</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">Story</button><button type="button" role="tab" aria-selected="true">Learn</button><button type="button" role="tab" aria-selected="false">Create</button></div></figure>
+<figure class="pv-field"><figcaption>Dialog</figcaption><div class="cv-dialog" role="dialog" aria-label="Save your work?"><h2>Save your work?</h2><p>We can keep this and take a break.</p></div></figure>
+<figure class="pv-field"><figcaption>Step progress</figcaption><progress class="cv-steps" max="4" value="2" aria-label="Step 2 of 4"></progress></figure>
+<figure class="pv-field"><figcaption>Mentor hint (icon + label, no character)</figcaption><button type="button" class="cv-hint" aria-label="Get a hint"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>Hint</button></figure>
+<figure class="pv-field"><figcaption>Portfolio card</figcaption><article class="cv-portfolio"><h3>My bridge</h3><time>2026-10-06</time><p>It held for 8 seconds.</p></article></figure>
+<figure class="pv-field"><figcaption>Parent gate</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>Changing this setting needs a grown-up.</p><button type="button">Confirm with passkey</button></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — info</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>This activity uses small parts.</p><p>Ask a grown-up to join you.</p></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — warning</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>This activity never uses real tools.</p><p>Build only with the pieces on screen.</p></div></figure></div><div class="pv-col" lang="zh-Hant" data-lang-block="zh-Hant" hidden><figure class="pv-field"><figcaption>按鈕 — 主要</figcaption><button type="button" class="cv-button">開始</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 次要</figcaption><button type="button" class="cv-button cv-button--secondary">再試一次</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 停用</figcaption><button type="button" class="cv-button" disabled>繼續</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 載入中</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>保存中…</button></figure>
+<figure class="pv-field"><figcaption>圖示 — 每個都有無障礙名稱</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="首頁"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>首頁</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="探索"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>探索</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="創作"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>創作</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="作品"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>作品</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="我"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>我</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="提示"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>提示</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="朗讀"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>朗讀</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="播放"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>播放</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="復原"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>復原</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="重做"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>重做</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="已鎖定"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>已鎖定</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="關閉"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>關閉</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="完成"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>完成</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>注意</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>資訊</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="返回"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>返回</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="故事"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>故事</span></span></div></figure>
+<figure class="pv-field"><figcaption>卡片</figcaption><section class="cv-card"><h2>蓋一座橋</h2><p>把木板拼起來，讓玩具車順利通過。</p></section></figure>
+<figure class="pv-field"><figcaption>標籤（一般與已選取）</figcaption><div class="pv-row"><span class="cv-chip">木頭</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>石頭</span></div></figure>
+<figure class="pv-field"><figcaption>分頁</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">故事</button><button type="button" role="tab" aria-selected="true">學習</button><button type="button" role="tab" aria-selected="false">創作</button></div></figure>
+<figure class="pv-field"><figcaption>對話框</figcaption><div class="cv-dialog" role="dialog" aria-label="要保存作品嗎？"><h2>要保存作品嗎？</h2><p>我們可以先保存作品，休息一下。</p></div></figure>
+<figure class="pv-field"><figcaption>步驟進度</figcaption><progress class="cv-steps" max="4" value="2" aria-label="第 2 步，共 4 步"></progress></figure>
+<figure class="pv-field"><figcaption>導師提示（圖示＋文字，不扮角色）</figcaption><button type="button" class="cv-hint" aria-label="取得提示"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>提示</button></figure>
+<figure class="pv-field"><figcaption>作品卡</figcaption><article class="cv-portfolio"><h3>我的橋</h3><time>2026-10-06</time><p>它撐住了 8 秒。</p></article></figure>
+<figure class="pv-field"><figcaption>家長確認</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>變更這個設定需要家長確認。</p><button type="button">用通行密鑰確認</button></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 資訊</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>這個活動會用到小零件。</p><p>請家長陪你一起進行。</p></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 注意</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>這個活動不會用到真正的工具。</p><p>只用畫面上的積木來搭建。</p></div></figure></div></div></section>
+<section class="pv-block" id="pv-parent" data-stage="parent" aria-labelledby="pv-parent-h"><div class="pv-section-head"><h2 id="pv-parent-h"><span lang="en" data-lang-block="en">Parent</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>家長</span></h2></div><div class="pv-grid"><div class="pv-col" lang="en" data-lang-block="en"><figure class="pv-field"><figcaption>Button — primary</figcaption><button type="button" class="cv-button">Start</button></figure>
+<figure class="pv-field"><figcaption>Button — secondary</figcaption><button type="button" class="cv-button cv-button--secondary">Try again</button></figure>
+<figure class="pv-field"><figcaption>Button — disabled</figcaption><button type="button" class="cv-button" disabled>Continue</button></figure>
+<figure class="pv-field"><figcaption>Button — loading</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>Saving…</button></figure>
+<figure class="pv-field"><figcaption>Icons — each with an accessible name</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Home"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>Home</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Explore"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>Explore</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Create"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>Create</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Projects"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>Projects</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Me"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>Me</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Hint"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>Hint</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Read aloud"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>Read aloud</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Play"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>Play</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Undo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>Undo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Redo"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>Redo</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Locked"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>Locked</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Close"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>Close</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Done"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>Done</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>Warning</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>Information</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Back"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>Back</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Story"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>Story</span></span></div></figure>
+<figure class="pv-field"><figcaption>Card</figcaption><section class="cv-card"><h2>Build a Bridge</h2><p>Put the planks together so the toy car can cross.</p></section></figure>
+<figure class="pv-field"><figcaption>Chip (normal and selected)</figcaption><div class="pv-row"><span class="cv-chip">Wood</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>Stone</span></div></figure>
+<figure class="pv-field"><figcaption>Tabs</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">Story</button><button type="button" role="tab" aria-selected="true">Learn</button><button type="button" role="tab" aria-selected="false">Create</button></div></figure>
+<figure class="pv-field"><figcaption>Dialog</figcaption><div class="cv-dialog" role="dialog" aria-label="Save your work?"><h2>Save your work?</h2><p>We can keep this and take a break.</p></div></figure>
+<figure class="pv-field"><figcaption>Step progress</figcaption><progress class="cv-steps" max="4" value="2" aria-label="Step 2 of 4"></progress></figure>
+<figure class="pv-field"><figcaption>Mentor hint (icon + label, no character)</figcaption><button type="button" class="cv-hint" aria-label="Get a hint"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>Hint</button></figure>
+<figure class="pv-field"><figcaption>Portfolio card</figcaption><article class="cv-portfolio"><h3>My bridge</h3><time>2026-10-06</time><p>It held for 8 seconds.</p></article></figure>
+<figure class="pv-field"><figcaption>Parent gate</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>Changing this setting needs a grown-up.</p><button type="button">Confirm with passkey</button></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — info</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Information"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>This activity uses small parts.</p><p>Ask a grown-up to join you.</p></div></figure>
+<figure class="pv-field"><figcaption>Safety notice — warning</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Warning"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>This activity never uses real tools.</p><p>Build only with the pieces on screen.</p></div></figure></div><div class="pv-col" lang="zh-Hant" data-lang-block="zh-Hant" hidden><figure class="pv-field"><figcaption>按鈕 — 主要</figcaption><button type="button" class="cv-button">開始</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 次要</figcaption><button type="button" class="cv-button cv-button--secondary">再試一次</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 停用</figcaption><button type="button" class="cv-button" disabled>繼續</button></figure>
+<figure class="pv-field"><figcaption>按鈕 — 載入中</figcaption><button type="button" class="cv-button" aria-busy="true" disabled>保存中…</button></figure>
+<figure class="pv-field"><figcaption>圖示 — 每個都有無障礙名稱</figcaption><div class="pv-row"><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="首頁"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"></path><path d="M6.5 10.5V20h11v-9.5"></path></g></svg><span>首頁</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="探索"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z"></path></g></svg><span>探索</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="創作"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14.5 3.5 6 6-3 3-6-6Z"></path><path d="M13 10 4 19"></path><path d="M3.5 20.5l1.5-2"></path></g></svg><span>創作</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="作品"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h5l2 2.5h9V19H4Z"></path><path d="M4 7V5.5h4.5L10.5 7"></path></g></svg><span>作品</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="我"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"></path><path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path></g></svg><span>我</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="提示"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg><span>提示</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="朗讀"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4Z"></path><path d="M15.5 9.5a4 4 0 0 1 0 5"></path><path d="M18 7a7.5 7.5 0 0 1 0 10"></path></g></svg><span>朗讀</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="播放"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 5.5v13l10-6.5Z" fill="currentColor" stroke="none"></path></g></svg><span>播放</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="復原"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6.5-3.5 3.5L8 13.5"></path><path d="M4.5 10h9a5.5 5.5 0 0 1 0 11h-2.5"></path></g></svg><span>復原</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="重做"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6.5 3.5 3.5L16 13.5"></path><path d="M19.5 10h-9a5.5 5.5 0 0 0 0 11H13"></path></g></svg><span>重做</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="已鎖定"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg><span>已鎖定</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="關閉"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12"></path><path d="M18 6 6 18"></path></g></svg><span>關閉</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="完成"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg><span>完成</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg><span>注意</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg><span>資訊</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="返回"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 12H5"></path><path d="m11 6-6 6 6 6"></path></g></svg><span>返回</span></span><span class="pv-icon-demo"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="故事"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12"></path><path d="M4 12h12"></path><path d="M4 19h12"></path></g></svg><span>故事</span></span></div></figure>
+<figure class="pv-field"><figcaption>卡片</figcaption><section class="cv-card"><h2>蓋一座橋</h2><p>把木板拼起來，讓玩具車順利通過。</p></section></figure>
+<figure class="pv-field"><figcaption>標籤（一般與已選取）</figcaption><div class="pv-row"><span class="cv-chip">木頭</span><span class="cv-chip cv-chip--selected" data-selected="true"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"></path></g></svg>石頭</span></div></figure>
+<figure class="pv-field"><figcaption>分頁</figcaption><div class="cv-tabs" role="tablist"><button type="button" role="tab" aria-selected="false">故事</button><button type="button" role="tab" aria-selected="true">學習</button><button type="button" role="tab" aria-selected="false">創作</button></div></figure>
+<figure class="pv-field"><figcaption>對話框</figcaption><div class="cv-dialog" role="dialog" aria-label="要保存作品嗎？"><h2>要保存作品嗎？</h2><p>我們可以先保存作品，休息一下。</p></div></figure>
+<figure class="pv-field"><figcaption>步驟進度</figcaption><progress class="cv-steps" max="4" value="2" aria-label="第 2 步，共 4 步"></progress></figure>
+<figure class="pv-field"><figcaption>導師提示（圖示＋文字，不扮角色）</figcaption><button type="button" class="cv-hint" aria-label="取得提示"><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5a5.5 5.5 0 0 0-3.2 9.96V17h6.4v-3.54A5.5 5.5 0 0 0 12 3.5Z"></path><path d="M9.5 20h5"></path></g></svg>提示</button></figure>
+<figure class="pv-field"><figcaption>作品卡</figcaption><article class="cv-portfolio"><h3>我的橋</h3><time>2026-10-06</time><p>它撐住了 8 秒。</p></article></figure>
+<figure class="pv-field"><figcaption>家長確認</figcaption><div class="cv-parent-gate" role="alert"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 11h11v9h-11Z"></path><path d="M9 11V8a3 3 0 0 1 6 0v3"></path></g></svg>變更這個設定需要家長確認。</p><button type="button">用通行密鑰確認</button></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 資訊</figcaption><div class="cv-safety cv-safety--info" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="資訊"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z"></path><path d="M12 11v5"></path><path d="M12 8h.01"></path></g></svg>這個活動會用到小零件。</p><p>請家長陪你一起進行。</p></div></figure>
+<figure class="pv-field"><figcaption>安全提示 — 注意</figcaption><div class="cv-safety cv-safety--warning" role="status"><p><svg class="cv-icon" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="注意"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 2.5 20.5h19Z"></path><path d="M12 10v4"></path><path d="M12 17h.01"></path></g></svg>這個活動不會用到真正的工具。</p><p>只用畫面上的積木來搭建。</p></div></figure></div></div></section>
+</section>
+</main>
+<footer class="pv-footer"><span lang="en" data-lang-block="en">Generated by pnpm ui:preview — do not edit by hand.</span><span lang="zh-Hant" data-lang-block="zh-Hant" hidden>由 pnpm ui:preview 產生 — 請勿手動編輯。</span></footer>
+<script>
+
+const stageButtons = Array.from(document.querySelectorAll("[data-set-stage]"));
+stageButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const stage = button.getAttribute("data-set-stage");
+    document.getElementById("pv-live").setAttribute("data-stage", stage);
+    document.body.setAttribute("data-stage", stage);
+    stageButtons.forEach((other) =>
+      other.setAttribute("aria-pressed", String(other === button)),
+    );
+  });
+});
+const langButtons = Array.from(document.querySelectorAll("[data-set-lang]"));
+langButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const lang = button.getAttribute("data-set-lang");
+    document.querySelectorAll("[data-lang-block]").forEach((block) => {
+      block.hidden = block.getAttribute("data-lang-block") !== lang;
+    });
+    document.documentElement.lang = lang;
+    document.getElementById("pv-live").setAttribute("lang", lang);
+    langButtons.forEach((other) =>
+      other.setAttribute("aria-pressed", String(other === button)),
+    );
+  });
+});
+
+</script>
+</body>
+</html>

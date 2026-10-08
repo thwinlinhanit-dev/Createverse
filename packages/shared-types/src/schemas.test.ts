@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ExperienceSpecSchema,
   HintLadderSchema,
   ProgressEventSchema,
   ProjectSchema,
@@ -102,6 +103,44 @@ describe("SkillSchema", () => {
       levels: 0,
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("ExperienceSpecSchema", () => {
+  const validSpec = {
+    experience_id: "exp.test",
+    version: 1,
+    stage: "explorer",
+    age_range: [6, 8],
+    difficulty: 2,
+    learning_objectives: ["concept.force"],
+    mission: { title_key: "exp.test.title", objective_key: "exp.test.objective" },
+    constraints: { max_pieces: 10, budget: 100, gap_width: 3 },
+    assessment: { success_conditions: ["vehicle_crosses"] },
+  };
+
+  it("accepts a minimal spec with bridge constraints", () => {
+    expect(ExperienceSpecSchema.safeParse(validSpec).success).toBe(true);
+  });
+
+  it("rejects unknown step_override keys (EXPERIENCE_RUNTIME §4)", () => {
+    const result = ExperienceSpecSchema.safeParse({
+      ...validSpec,
+      step_overrides: {
+        "step.bridge.e2": { max_pieces: 6, sneaky_key: true },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts known step_override keys", () => {
+    const result = ExperienceSpecSchema.safeParse({
+      ...validSpec,
+      step_overrides: {
+        "step.bridge.e2": { build_enabled: false, vehicle: "truck", force_view: true },
+      },
+    });
+    expect(result.success).toBe(true);
   });
 });
 

@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+    },
+    "version": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "status": {
+      "default": "draft",
+      "type": "string",
+      "enum": [
+        "draft",
+        "reviewed",
+        "approved"
+      ]
+    },
+    "title_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"
+    },
+    "story_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"
+    },
+    "mission_key": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"
+    },
+    "interests": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+      }
+    },
+    "lanes": {
+      "type": "object",
+      "properties": {
+        "junior": {
+          "type": "object",
+          "properties": {
+            "age_range": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "steps": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+              }
+            },
+            "experience": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+            }
+          },
+          "required": [
+            "age_range",
+            "steps",
+            "experience"
+          ]
+        },
+        "explorer": {
+          "type": "object",
+          "properties": {
+            "age_range": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "steps": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+              }
+            },
+            "experience": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+            }
+          },
+          "required": [
+            "age_range",
+            "steps",
+            "experience"
+          ]
+        },
+        "maker": {
+          "type": "object",
+          "properties": {
+            "age_range": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                },
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 18
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "steps": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+              }
+            },
+            "experience": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+            }
+          },
+          "required": [
+            "age_range",
+            "steps",
+            "experience"
+          ]
+        }
+      },
+      "required": [
+        "junior",
+        "explorer",
+        "maker"
+      ]
+    },
+    "learning_objectives": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+      }
+    },
+    "required_skills": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+      }
+    },
+    "materials": {
+      "default": [],
+      "type": "array",
+      "items": {}
+    },
+    "reflection_prompts": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"
+      }
+    },
+    "portfolio_artifact": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "kind"
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "properties": {
+        "risk_class": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "notes_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)+$"
+        }
+      },
+      "required": [
+        "risk_class",
+        "notes_key"
+      ]
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "title_key",
+    "story_key",
+    "mission_key",
+    "lanes",
+    "portfolio_artifact",
+    "safety"
+  ],
+  "title": "project"
+}

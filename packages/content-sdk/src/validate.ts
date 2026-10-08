@@ -18,6 +18,7 @@ import {
   parseOne,
   requireRefs,
 } from "./helpers.ts";
+import { findSimplifiedChars } from "./zhHant.ts";
 
 const LocaleCatalogSchema = z.record(z.string(), z.string());
 
@@ -208,6 +209,22 @@ export function validateRawPack(raw: RawPack): Issues {
         errors.push({
           where: `locales/${locale}.json`,
           message: `missing or empty message for key "${key}"`,
+        });
+      }
+    }
+  }
+
+  // 7. Simplified-character check for zh-Hant (P0-08; ADR-0008, SAFETY.md §13)
+  const zhCatalog = catalogs.get("zh-Hant");
+  if (zhCatalog) {
+    for (const [key, message] of Object.entries(zhCatalog)) {
+      const simplified = findSimplifiedChars(message);
+      if (simplified.length > 0) {
+        errors.push({
+          where: "locales/zh-Hant.json",
+          message: `key "${key}" contains Simplified-Chinese character(s) ${simplified
+            .map((c) => `"${c}"`)
+            .join(", ")} — zh-Hant must be Traditional only (ADR-0008)`,
         });
       }
     }

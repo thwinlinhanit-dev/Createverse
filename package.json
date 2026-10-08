@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "packageManager": "pnpm@10.18.3",
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3"]
+  },
   "engines": {
     "node": ">=24"
   },
@@ -12,13 +15,26 @@
     "lint": "eslint .",
     "test": "vitest run",
     "content:validate": "node packages/content-sdk/src/cli.ts",
+    "content:build": "node packages/content-sdk/src/cli.ts build",
+    "content:schemas": "node packages/content-sdk/src/cli.ts schemas",
+    "ui:preview": "node packages/ui/src/cli.ts",
+    "app:css": "pnpm --filter @createverse/app css",
+    "app:build": "pnpm --filter @createverse/app build",
+    "ai:eval": "node ai/evals/run.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm content:validate",
-    "dev": "echo \"apps/app arrives with task P1-03 — see docs/TASKS_PHASE_0_1.md\" && exit 0"
+    "dev": "pnpm --filter @createverse/app dev"
   },
   "devDependencies": {
+    "@createverse/ai-core": "workspace:*",
+    "@createverse/shared-types": "workspace:*",
     "@eslint/js": "^9.0.0",
+    "@simplewebauthn/server": "^14.0.3",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^24.0.0",
+    "axe-core": "^4.14.0",
     "eslint": "^9.0.0",
+    "globals": "^17.13.0",
+    "jsdom": "^30.1.2",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.0.0",
     "vitest": "^3.2.0"

@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/). Every task adds an entry here.
 
+## [Unreleased] — 2026-10-08
+
+### Added
+- **P1-02 Localization foundation — DONE:** `packages/i18n` — ~160-key ICU message catalogs (`messages.en.ts` as key source of truth, `messages.zhHant.ts` typed against `MessageKey` so missing/invented keys fail typecheck), `createTranslator(locale)` with ICU `plural`/`select`/placeholders via `intl-messageformat` (compiled-message cache, runtime fallback to `en`). App wiring: `useT()` binds the translator to the child profile language (ADR-0008: locale per child, no Accept-Language); header/chrome, parent gate, all 10 pages and fallback screens moved from bilingual ternaries to `t("key")`; nav labels are typed `MessageKey`s. ESLint rule `cv/no-raw-text` (`scripts/eslint-rules/no-raw-text.mjs`) blocks raw JSX text, strings in JSX containers/attributes and raw text-bearing object values in every `.tsx`. Tests: catalog parity/ICU/fallback (11), rule fixtures (7), locale-switch shell render (3) — repo total 181.
+- **P1-01 Identity and family — DONE:** `backend/` Hono + Drizzle/SQLite API (ADR-0003) — passkey-first parent auth (WebAuthn register/login/step-up `parent+fresh` via `POST /auth/fresh`, `@simplewebauthn/server`), one-time setup bootstrap, sessions with SHA-256-hashed tokens + 5-minute fresh window, device credentials (hashed at rest, shown once; revoke kills the device's sessions), parent-created child profiles + `child_settings` with optional PIN (5 attempts → 15-min lockout) and device-scoped `POST /children/:id/open`; strict-Zod bodies, API_SPEC §3 error envelope, 64 KB cap, 10/min-per-IP auth rate limit + 120/min per session, same-origin CORS incl. preflight, `no-store`. 10-table identity schema + generated migration (`backend/migrations`), deviations documented in `docs/DATA_MODEL.md` §3.1. Audit rows for all 14 auth actions (ids/enums only). Tests: `backend/test/{matrix,auth,audit}.test.ts` — authorization matrix generated from the route table (5 credential scenarios × 18 routes), cross-family 404 denial, child cannot self-register, step-up + replay rejection, PIN lockout, revoked device, foreign-Origin 403, rate limit, audit coverage/personal-data absence (29 tests; repo total 160).
+- **Workspace:** `backend` package added to `pnpm-workspace.yaml`; root `package.json` gained `pnpm.onlyBuiltDependencies: [better-sqlite3]` (native binding).
+
 ## [Unreleased] — 2026-10-06
 
 ### Added

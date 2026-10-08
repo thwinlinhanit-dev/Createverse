@@ -341,6 +341,18 @@ CREATE TABLE audit_log (
 );
 ```
 
+### 3.1 Implemented deviations (P1-01, 2026-10-08)
+
+`backend/src/db/schema.ts` implements §3 for the identity tables with these additions (also documented in the schema header):
+
+- **`sessions`** (new table) — API_SPEC §2 requires server-side sessions: `token_hash` (SHA-256 of the bearer token; the raw token exists only in the login/bootstrap response), `fresh_at` (time of the last passkey confirmation — drives the 5-minute `parent+fresh` window), `revoked_at`, optional `device_id`. Unique index on `token_hash` only.
+- **`setup_secrets`** (new table) — one-time bootstrap secret for `POST /setup/bootstrap` (API_SPEC §5.1), stored hashed with `expires_at` / `used_at`.
+- **`auth_challenges`** (new table) — single-use, 5-minute WebAuthn challenges for the register/login/step-up ceremonies (replay protection, SECURITY §4).
+- **`devices.credential_hash`** (new column) — the device credential is stored as a SHA-256 hash; the raw credential is returned exactly once at registration (SECURITY §6).
+- **`children.pin_failed_attempts` / `children.pin_locked_until`** (new columns) — PIN lockout: 5 failed attempts lock the profile for 15 minutes (SECURITY §4).
+- **Indexes are non-unique** on `family_id` (devices/children/sessions) and `user_id` (passkeys): a family has many devices/children/sessions and a parent may hold several passkeys. Only `users.email` is UNIQUE per §3.
+- Tables §3 defines beyond identity (`progress_events`, `project_instances`, …) are created by their owning tasks (P1-05/P1-08+), not by P1-01.
+
 ---
 
 ## 4. Event catalogue (v1)

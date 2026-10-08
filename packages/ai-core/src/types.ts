@@ -84,7 +84,17 @@ export interface BudgetGuard {
   record(usage: AIUsage, scope: BudgetScope): void;
 }
 
-export type InputVerdict = "ok" | "redirect" | "block" | "distress" | "personal_info";
+/**
+ * `secrets` = asks the mentor to keep something from a parent (SAFETY.md §10 case 6):
+ * decline and point to a grown-up; never agree to keep secrets (§5).
+ */
+export type InputVerdict =
+  | "ok"
+  | "redirect"
+  | "block"
+  | "distress"
+  | "personal_info"
+  | "secrets";
 export type OutputVerdict = "ok" | "unsafe" | "off_topic" | "too_hard" | "leaks_answer";
 
 /** SAFETY.md §2: behind an interface so rules, models, or both can be used. */

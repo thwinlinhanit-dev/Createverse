@@ -12,7 +12,13 @@
     },
     "seed": 42,
     "variables": { "gravity": 9.8 },
-    "constraints": { "max_pieces": 5, "budget": 50 },
+    "constraints": {
+      "max_pieces": 5,
+      "budget": 50,
+      "gap_width": 3,
+      "piece_types": ["plank", "pillar"],
+      "vehicles": ["car", "truck"]
+    },
     "ui": {
       "read_aloud": true,
       "no_text_required": true,
@@ -20,8 +26,8 @@
       "force_view": false,
       "test_log": false
     },
-    "assessment": { "success_conditions": ["car_crosses"] },
-    "telemetry": ["pieces_placed", "run_result"]
+    "assessment": { "success_conditions": ["vehicle_crosses", "bridge_holds_3s"] },
+    "telemetry": ["piece_placed", "run_finished"]
   },
   {
     "experience_id": "exp.bridge.e",
@@ -36,7 +42,13 @@
     },
     "seed": 42,
     "variables": { "gravity": 9.8 },
-    "constraints": { "max_pieces": 10, "budget": 100 },
+    "constraints": {
+      "max_pieces": 10,
+      "budget": 100,
+      "gap_width": 3,
+      "piece_types": ["plank", "pillar", "beam", "brace"],
+      "vehicles": ["car", "truck"]
+    },
     "ui": {
       "read_aloud": true,
       "no_text_required": false,
@@ -44,8 +56,10 @@
       "force_view": true,
       "test_log": false
     },
-    "assessment": { "success_conditions": ["car_crosses", "bridge_holds_5s"] },
-    "telemetry": ["pieces_placed", "run_result", "peak_stress"]
+    "assessment": {
+      "success_conditions": ["vehicle_crosses", "bridge_holds_5s"]
+    },
+    "telemetry": ["piece_placed", "run_finished", "force_view_toggled"]
   },
   {
     "experience_id": "exp.bridge.m",
@@ -60,7 +74,13 @@
     },
     "seed": 42,
     "variables": { "gravity": 9.8 },
-    "constraints": { "max_pieces": 15, "budget": 120 },
+    "constraints": {
+      "max_pieces": 15,
+      "budget": 120,
+      "gap_width": 3,
+      "piece_types": ["plank", "pillar", "beam", "brace"],
+      "vehicles": ["car", "truck", "train"]
+    },
     "ui": {
       "read_aloud": true,
       "no_text_required": false,
@@ -69,8 +89,13 @@
       "test_log": true
     },
     "assessment": {
-      "success_conditions": ["car_crosses", "bridge_holds_5s", "within_budget"]
+      "success_conditions": ["vehicle_crosses", "bridge_holds_5s", "cost<=budget"]
     },
-    "telemetry": ["pieces_placed", "run_result", "peak_stress", "total_cost"]
+    "telemetry": [
+      "piece_placed",
+      "run_finished",
+      "force_view_toggled",
+      "design_changed_after_run"
+    ]
   }
 ]

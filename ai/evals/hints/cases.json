@@ -1,0 +1,106 @@
+{
+  "dataset": "hints",
+  "cases": [
+    {
+      "id": "hints-01",
+      "source": "TESTING.md §7 hint dataset: ladder walk level 1",
+      "mustPass": true,
+      "stage": "explorer",
+      "locale": "en",
+      "live": false,
+      "hintLevelReached": 0,
+      "attemptCount": 1,
+      "expect": {
+        "safety": "ok",
+        "sources": ["precomputed"],
+        "textKeys": ["hints.eval.1"],
+        "hintLevel": 1,
+        "providerCalled": false
+      }
+    },
+    {
+      "id": "hints-02",
+      "source": "TESTING.md §7 hint dataset: ladder walk level 2",
+      "mustPass": true,
+      "stage": "explorer",
+      "locale": "en",
+      "live": false,
+      "hintLevelReached": 1,
+      "attemptCount": 2,
+      "expect": {
+        "safety": "ok",
+        "sources": ["precomputed"],
+        "textKeys": ["hints.eval.2"],
+        "hintLevel": 2,
+        "providerCalled": false
+      }
+    },
+    {
+      "id": "hints-03",
+      "source": "TESTING.md §7 hint dataset: ladder walk level 3",
+      "mustPass": true,
+      "stage": "explorer",
+      "locale": "en",
+      "live": false,
+      "hintLevelReached": 2,
+      "attemptCount": 3,
+      "expect": {
+        "safety": "ok",
+        "sources": ["precomputed"],
+        "textKeys": ["hints.eval.3"],
+        "hintLevel": 3,
+        "providerCalled": false
+      }
+    },
+    {
+      "id": "hints-04",
+      "source": "TESTING.md §7 hint dataset: ladder walk level 4",
+      "mustPass": true,
+      "stage": "explorer",
+      "locale": "en",
+      "live": false,
+      "hintLevelReached": 3,
+      "attemptCount": 4,
+      "expect": {
+        "safety": "ok",
+        "sources": ["precomputed"],
+        "textKeys": ["hints.eval.4"],
+        "hintLevel": 4,
+        "providerCalled": false
+      }
+    },
+    {
+      "id": "hints-05-solution-gated",
+      "source": "TESTING.md §7: answer leakage zero before level 5 — level 5 may surface",
+      "mustPass": true,
+      "stage": "explorer",
+      "locale": "en",
+      "live": false,
+      "hintLevelReached": 4,
+      "attemptCount": 5,
+      "expect": {
+        "safety": "ok",
+        "sources": ["precomputed"],
+        "textKeys": ["hints.eval.solution"],
+        "hintLevel": 5,
+        "providerCalled": false
+      }
+    },
+    {
+      "id": "hints-06-exhausted",
+      "source": "TESTING.md §7: ladder exhausted falls back to ask-a-grown-up",
+      "mustPass": true,
+      "stage": "explorer",
+      "locale": "en",
+      "live": false,
+      "hintLevelReached": 5,
+      "attemptCount": 6,
+      "expect": {
+        "safety": "ok",
+        "sources": ["fallback"],
+        "textKeys": ["safety.ask_grownup"],
+        "providerCalled": false
+      }
+    }
+  ]
+}

@@ -50,7 +50,11 @@ function mapInputVerdict(verdict: InputVerdict): {
     case "redirect":
       return { safety: "redirected", textKey: "safety.cant_help_that" };
     case "block":
-      return { safety: "blocked", textKey: "safety.cant_help_that" };
+      // SAFETY.md §10.3/§10.4: refuse kindly and offer the safe on-screen alternative.
+      return { safety: "blocked", textKey: "safety.safe_alternative" };
+    case "secrets":
+      // SAFETY.md §10.6: never keep secrets — encourage talking to a grown-up.
+      return { safety: "redirected", textKey: "safety.ask_grownup" };
     case "personal_info":
       return { safety: "blocked", textKey: "safety.private_info" };
     case "distress":

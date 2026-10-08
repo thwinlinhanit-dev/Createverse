@@ -28,6 +28,49 @@ export const ExperienceUiSchema = z
     test_log: false,
   }));
 
+/**
+ * Per-step overrides (EXPERIENCE_RUNTIME.md §4). Override wins over the spec.
+ * Unknown keys are a validation error (strictObject).
+ */
+export const StepOverrideSchema = z.strictObject({
+  preset: z.string().min(1).optional(),
+  build_enabled: z.boolean().optional(),
+  vehicle: z.string().min(1).optional(),
+  vehicles: z.array(z.string().min(1)).optional(),
+  max_pieces: z.number().int().positive().optional(),
+  budget: z.number().min(0).optional(),
+  pieces: z.array(z.string().min(1)).optional(),
+  force_view: z.boolean().optional(),
+  bonus_vehicle: z.string().min(1).optional(),
+});
+export type StepOverride = z.infer<typeof StepOverrideSchema>;
+
+/**
+ * Experience constraints. The first two fields are generic (DATA_MODEL.md §2.6);
+ * the rest feed the bridge domain (EXPERIENCE_RUNTIME.md §5) and are optional so
+ * other domains can define their own constraint sets later.
+ */
+export const ExperienceConstraintsSchema = z.object({
+  max_pieces: z.number().int().positive(),
+  budget: z.number().min(0),
+  /** Bridge: gap width in grid units (world: 1 unit = 1 grid cell). */
+  gap_width: z.number().positive().optional(),
+  /** Allowed piece types; the domain default set applies when absent. */
+  piece_types: z.array(z.string().min(1)).optional(),
+  /** Materials: cost per unit length and strength multiplier. */
+  materials: z
+    .record(
+      z.string(),
+      z.object({
+        cost: z.number().min(0),
+        strength: z.number().positive(),
+      }),
+    )
+    .optional(),
+  /** Vehicle ids; the domain default set applies when absent. */
+  vehicles: z.array(z.string().min(1)).optional(),
+});
+
 export const ExperienceSpecSchema = z.object({
   experience_id: ContentIdSchema,
   version: VersionSchema,
@@ -41,17 +84,14 @@ export const ExperienceSpecSchema = z.object({
   }),
   seed: z.number().int().default(0),
   variables: z.record(z.string(), z.number()).default({}),
-  constraints: z.object({
-    max_pieces: z.number().int().positive(),
-    budget: z.number().min(0),
-  }),
+  constraints: ExperienceConstraintsSchema,
   ui: ExperienceUiSchema,
   assessment: z.object({
     success_conditions: z.array(z.string().min(1)).min(1),
   }),
   telemetry: z.array(z.string().min(1)).default([]),
-  /** Per-step overrides; refined by EXPERIENCE_RUNTIME.md §4 in task P0-07. */
-  step_overrides: z.record(z.string(), z.unknown()).optional(),
+  /** Per-step overrides keyed by step id; unknown keys are a validation error. */
+  step_overrides: z.record(z.string(), StepOverrideSchema).optional(),
 });
 export type ExperienceSpec = z.infer<typeof ExperienceSpecSchema>;
 

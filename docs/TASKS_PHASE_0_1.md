@@ -27,64 +27,64 @@ GOAL: The full doc set exists, cross-referenced, and reviewed by the owner.
 DONE: PRODUCT_SPEC, ARCHITECTURE, DATA_MODEL, API_SPEC, SAFETY, SECURITY, TESTING, ROADMAP, AGENT_OPERATING_RULES, DESIGN_SYSTEM, AI_SPEC, EXPERIENCE_RUNTIME, CREATEVERSE_BUILD_PLAN present; INDEX.md and CURRENT_STATE.md created.
 REMAINING: owner review of every "Draft v0.1" document; record the outcome in each document's Status line. APPROVAL REQUIRED: Yes (owner).
 
-## P0-03 — Technology ADR files — **TODO**
+## P0-03 — Technology ADR files — **DONE (2026-10-06, uncommitted)**
 
 GOAL: One ADR file per approved decision, in `docs/decisions/ADR-XXXX-title.md`.
-CONTEXT: ARCHITECTURE.md §14 has the index and summaries for ADR-0001..0008 (all Accepted); the individual files do not exist.
-REQUIREMENTS: 0001 TypeScript pnpm monorepo; 0002 installable PWA; 0003 Hono+Drizzle+SQLite on Cloudflare free tier; 0004 local-first events with idempotent sync; 0005 AI provider interface + pre-generated hints; 0006 web-only experience runtime; 0007 content as validated data in git; 0008 ICU keys, en + zh-Hant. Each file: Context, Decision, Alternatives, Consequences, Status.
+DONE: `docs/decisions/ADR-0001-typescript-pnpm-monorepo.md` through `ADR-0008-icu-i18n-en-zh-hant.md` plus `docs/decisions/README.md`; each file has Context, Decision, Alternatives, Consequences, Status.
+REMAINING: none — task text above still says "TODO" because the files were written without updating this backlog line. No doc contradictions found in this pass.
 ACCEPTANCE CRITERIA: 8 files exist; INDEX.md updated; no contradiction with ARCHITECTURE.md.
 TEST PLAN: doc review only. APPROVAL REQUIRED: Yes (decisions already owner-approved; files must not change them).
 
-## P0-04 — Design tokens + base components — **PARTIAL (tokens done; components TODO)**
+## P0-04 — Design tokens + base components — **DONE (2026-10-06)**
 
 GOAL: Color/type/spacing/radius/motion tokens; button, card, chip, tabs, dialog; a preview page rendering every component in every preset and both languages.
 CONTEXT: `packages/design-tokens` exists (tokens JSON, stage presets, CSS variable generation, contrast tests). DESIGN_SYSTEM.md §2 and §10 are the spec.
-REMAINING: `packages/ui` components (Button, Card, Chip, Tabs, Dialog, StepProgress, HintButton, PortfolioCard, ParentGate, SafetyNotice), `data-stage` preset switching, preview page, axe checks.
+DONE (2026-10-06): `packages/ui` components + token-only CSS with app-root `data-stage` preset switching, self-authored SVG icon set, generated preview page (`pnpm ui:preview`, committed + freshness test) covering all 4 presets × en + zh-Hant, axe/touch-target/escape tests (22). REMAINING: none for P0-04 — screenshot snapshots land with P1-16.
 ACCEPTANCE CRITERIA: preview page shows all components in junior/explorer/maker/parent presets, en + zh-Hant, WCAG AA contrast, 48 px (64 px Junior) targets.
 DEPENDENCIES: P0-01. APPROVAL REQUIRED: No (major redesign later: Yes).
 
-## P0-05 — Privacy and safety threat model — **TODO**
+## P0-05 — Privacy and safety threat model — **DONE (draft, 2026-10-06, uncommitted; owner review PENDING)**
 
 GOAL: Map child data flows end to end, including exactly what could ever be sent to an AI provider.
-REQUIREMENTS: data-flow diagram (device → sync → DB → AI provider), assets/actors, threats with mitigations (cross-ref SECURITY.md §3), explicit "never sent to AI" list (names, birth data, free-text profiles), retention confirmation items for the privacy review.
+DONE: `docs/architecture/THREAT_MODEL.md` (Draft v0.1) with the device → sync → DB → AI-provider flow map, per-flow threats cross-referenced to SECURITY.md §3, the permanent "never sent to AI" list, retention confirmation items, and privacy-review checklist.
 OUTPUTS: `docs/architecture/THREAT_MODEL.md`.
 ACCEPTANCE CRITERIA: every table in DATA_MODEL.md §6 appears in the flow map; the owner can answer "what leaves the device" from the doc alone.
 DEPENDENCIES: P0-02. APPROVAL REQUIRED: Yes (owner review).
 
 
-## P0-06 — AI mentor prototype — **PARTIAL (ai-core done; prompts/evals TODO)**
+## P0-06 — AI mentor prototype — **DONE (2026-10-06)**
 
 GOAL: One hint-ladder conversation through the provider interface, plus pre-generated fallback. Works with the provider on and off.
 CONTEXT: AI_SPEC.md §3 (interfaces), SAFETY.md §2 (pipeline). Budget rules in CREATEVERSE_BUILD_PLAN.md §5.
 DONE: `packages/ai-core` — `MentorService.getHelp()` (precomputed ladder → cache → live → fallback), `BudgetGuard` (daily per-child + monthly caps), `MockAIProvider`, safety-layer interface, Junior-no-live-chat rule. Unit tests cover AI-off behavior, budget blocks, provider failure fallback.
-REMAINING: versioned prompt files in `ai/prompts/`, policy files in `ai/policies/`, eval runner in `ai/evals/` with mock and recorded modes (TESTING.md §7, SAFETY.md §10).
+DONE (2026-10-06): versioned prompts (`ai/prompts/mentor.system.md` v0.1) and policy (`ai/policies/mentor.policy.md` v0.1); eval runner in `ai/evals/` with mock and recorded modes — 51 cases (SAFETY §10 rows 1–15 in both languages, S1–S7, pedagogy, hint-leak, injection), run via `pnpm ai:eval` and inside `pnpm test` (TESTING.md §7, SAFETY.md §10). ai-core gained `secrets` verdict, unsafe→`safety.safe_alternative` mapping, new input patterns and an output instruction-leak filter. REMAINING: live/recorded-from-real-provider runs wait on the AI_SPEC §16 provider decision.
 ACCEPTANCE CRITERIA: mentor answers from content with zero live AI; live path only when enabled, allowed by stage, and inside budget.
 DEPENDENCIES: P0-03. APPROVAL REQUIRED: choosing the live provider: Yes.
 
-## P0-07 — Web experience runtime spike — **TODO**
+## P0-07 — Web experience runtime spike — **PARTIAL (headless done in CI; device run pending)**
 
 GOAL: One Experience Spec (Junior bridge) running in the browser with physics; success/fail conditions evaluated; telemetry emitted.
-CONTEXT: EXPERIENCE_RUNTIME.md is the spec (interface §2, spec fields §3, performance §11, error handling §12). ADR-0006 forbids a game engine.
+DONE: `packages/experience-runtime` (`WebExperienceRuntime`, Canvas 2D + Matter.js, ADR-0006) with the bridge domain, fixed-step headless mode, step overrides, success conditions, telemetry, snapshot/restore, instability guard; wired into `tsconfig.base.json` paths; `test/bridge.test.ts` (8 deterministic headless fixtures: pass/fail/support/determinism/telemetry/snapshot/invalid-spec/force-view); `docs/architecture/RUNTIME_SPIKE.md` records fixtures, tuning, and pending device work.
 REQUIREMENTS: `packages/experience-runtime` with `ExperienceRuntime` interface + `WebExperienceRuntime` (Canvas 2D + Matter.js), headless mode for tests, bridge domain v0 (place pieces, gap, toy car, hold-for-time success condition), snapshot/restore, telemetry callbacks. Results go in `docs/architecture/RUNTIME_SPIKE.md` and feed back into EXPERIENCE_RUNTIME.md.
 ACCEPTANCE CRITERIA: Junior bridge runs on the real phone and tablet at the 30 fps floor; deterministic headless runs in CI.
 DEPENDENCIES: P0-03. APPROVAL REQUIRED: No (a game engine later: Yes).
 
-## P0-08 — Content schema + validator — **PARTIAL (content-sdk + draft content done; compiler TODO)**
+## P0-08 — Content schema + validator — **DONE (2026-10-06)**
 
 GOAL: Validation for learning content with invalid content failing CI.
 DONE: `packages/content-sdk` — Zod schemas from shared-types, pack loader, checks: schema validity, graph references, lane coverage per stage, hint-ladder completeness, i18n key completeness (en + zh-Hant), draft status. CLI `cv-content validate`. Draft bridge content under `content/`.
-REMAINING: compiler producing per-(locale, stage) static bundles (ARCHITECTURE.md §7), Simplified-character check for zh-Hant, JSON Schema generation for editors.
+DONE (2026-10-06): bundle compiler (`pnpm content:build` → deterministic `content/bundles/<locale>/<stage>.json`, 3 stages × 2 languages, nothing written on validation failure), Simplified-character check for zh-Hant enforced in validation (`zhHant.ts`), JSON Schema generation for editors (`pnpm content:schemas` → committed `content/schemas/`, drift-tested). REMAINING: none — acceptance met (`pnpm content:validate` still fails on missing keys/dangling ids/missing lanes).
 ACCEPTANCE CRITERIA: `pnpm content:validate` fails on any missing translation key, dangling id, or missing lane; bundles compile for 3 stages × 2 languages.
 DEPENDENCIES: P0-01. APPROVAL REQUIRED: No.
 
-## P0-09 — Free-tier and auth feasibility spike — **TODO**
+## P0-09 — Free-tier and auth feasibility spike — **DONE locally (2026-10-06); on-platform step PENDING owner account**
 
 GOAL: Prove Hono on Workers + D1 fits the free tier for passkey verification, event batch insert, and sync; check artifact storage options.
 REQUIREMENTS: measure CPU time for (a) WebAuthn verification, (b) 50-event idempotent batch insert, (c) sync read; document storage options and prices; written result; ADR-0003 addendum; fallback decision (small VPS) if limits fail.
-OUTPUTS: `docs/architecture/FREE_TIER_SPIKE.md`.
+DONE (2026-10-06): `docs/architecture/FREE_TIER_SPIKE.md` (measurements, current free-tier limits, storage options + prices, capacity math, VPS fallback triggers) + ADR-0003 addendum + reproducible `scripts/free-tier-bench.mjs` — WebAuthn verify 0.32 ms CPU, 50-event idempotent batch 0.15 ms CPU, sync read 0.16 ms CPU, all ≪ the 10 ms Workers budget. REMAINING: on-platform CPU confirmation (deploy spike Worker, real passkey ceremony) — blocked on owner approval to create the Cloudflare account.
 DEPENDENCIES: P0-03. APPROVAL REQUIRED: Yes (hosting decision gate, ROADMAP §6).
 
-## P0-10 — Backlog expansion for Phases 2–7 — **TODO**
+## P0-10 — Backlog expansion for Phases 2–7 — **DONE draft (2026-10-06); owner scope check PENDING**
 
 GOAL: Expand the epics in CREATEVERSE_BUILD_PLAN.md §7 into tasks in the §8 format.
 REQUIREMENTS: every epic (P2-A..P7) gets tasks with acceptance criteria, test plan, dependencies; stored in `docs/TASKS_PHASE_2_7.md`.
@@ -96,29 +96,35 @@ DEPENDENCIES: P0-02. APPROVAL REQUIRED: Yes (owner scope check).
 
 Scope note (BUILD_PLAN §7): ONE project (Build a Bridge) across all three lanes and both languages before authoring a second project.
 
-## P1-01 — Identity and family — **TODO**
+## P1-01 — Identity and family — **DONE (2026-10-08)**
 
 GOAL: Parent sign-up, parent-created child profiles, strong auth (passkey-first per SECURITY.md §16.1).
 REQUIREMENTS: users, families, sessions, devices; audit log rows for login/logout/failed login/device register/revoke; a child cannot self-register; step-up (`parent+fresh`) for sensitive actions (API_SPEC §2).
-TEST PLAN: authorization matrix on every auth endpoint; audit rows asserted.
-ACCEPTANCE CRITERIA: audit log written for every auth action; cross-family access denied by test.
+DONE (2026-10-08): `backend/` — Hono + Drizzle/SQLite API (ADR-0003) covering the API_SPEC §5.1–5.3/§5.11 subset: one-time `setup/bootstrap`; WebAuthn passkey register/login and step-up via the dual-mode `POST /auth/fresh` (empty body → challenge, assertion → verify); sessions with SHA-256-hashed tokens, 12 h TTL and a 5-minute `fresh_at` step-up window; devices with a hashed credential returned exactly once (revoke kills the device's sessions); parent-created child profiles + `child_settings` with optional PIN (5 failed attempts → 15-min lockout) and `POST /children/:id/open` at role=device scoped to the device's family; family info. Strict-Zod bodies (unknown fields → 400), 64 KB cap, API_SPEC §3 error envelope, auth rate limit 10/min/IP + 120/min/session, same-origin CORS incl. preflight, `Cache-Control: no-store`. 10-table identity schema + generated migration (`backend/migrations`), deviations documented in DATA_MODEL §3.1 and the schema header. Audit rows for all 14 auth actions with ids/enums only. Tests: `backend/test/{matrix,auth,audit}.test.ts` — authorization matrix generated from `ROUTES` (5 credential scenarios × 18 routes), cross-family 404 denial, child cannot self-register, step-up enforced + challenge replay rejected, PIN lockout/recovery, revoked device and its sessions dead, foreign-Origin 403, strict-Zod/oversize/unknown-route envelopes, 429 rate limit, audit coverage and personal-data absence. `pnpm check` green (160 tests).
+TEST PLAN: authorization matrix on every auth endpoint; audit rows asserted. **Covered** — matrix is generated from the route table (a new endpoint cannot skip a row); audit assertions in `audit.test.ts`.
+ACCEPTANCE CRITERIA: audit log written for every auth action; cross-family access denied by test. **Met** — both asserted in `pnpm test`.
 DEPENDENCIES: P0-*.
+REMAINING: real-browser/phone passkey ceremony and on-platform Workers CPU numbers fold into P0-09; the backend is not deployed yet (hosting needs the owner's Cloudflare approval).
 
-## P1-02 — Localization foundation — **TODO**
+## P1-02 — Localization foundation — **DONE (2026-10-08)**
 
 GOAL: `t("key")` everywhere, en + zh-Hant switching per child, no hard-coded UI strings.
 REQUIREMENTS: ICU message catalogs in `packages/i18n`, locale from the child profile, lint rule blocking raw strings in UI code.
-TEST PLAN: lint fails on a raw string fixture; locale switch renders both catalogs.
-ACCEPTANCE CRITERIA: lint fails on a raw string; switching locale changes the whole shell.
+DONE (2026-10-08): `packages/i18n` — ~160-key ICU catalogs (`messages.en.ts` is the source of truth; `messages.zhHant.ts` is typed `Record<MessageKey, string>` so a missing or invented key fails typecheck, with runtime parity/placeholder checks too), `createTranslator(locale)` with ICU plural/select/placeholder via `intl-messageformat` (compiled-message cache), runtime fallback to `en`, unknown key returns the key. App wiring: `useT()` in `apps/app/src/i18n.ts` binds the translator to the child profile language — the app's only locale source (ADR-0008, no Accept-Language); header/chrome, parent gate, all 10 pages and the fallback/error screens render `t("key")`; nav labels are typed `MessageKey`s in `routes.ts`; brand stays an invariant constant. Real ICU in the shell: greeting `select` on time of day, overview completed-projects `plural` incl. the `=0` branch. Lint: `cv/no-raw-text` (`scripts/eslint-rules/no-raw-text.mjs`, registered in `eslint.config.js` for every `.tsx`) blocks raw JSX text, strings reaching JSX containers/attributes, and raw values under text-bearing object keys (`label`, `title`, …) — while allowing `t()`/call arguments and code-valued attributes (className, id, role, aria IDREFs, SVG attrs, icon names).
+TEST PLAN: lint fails on a raw string fixture; locale switch renders both catalogs. **Covered** — `apps/app/test/no-raw-text.test.ts` (7 fixtures through ESLint's `Linter` with the shipped rule + config) and `apps/app/src/locale.test.tsx` (3 jsdom render tests: en, switch to zh-Hant, switch back).
+ACCEPTANCE CRITERIA: lint fails on a raw string; switching locale changes the whole shell. **Met** — verified end-to-end: `npx eslint` on a temporary raw-string probe exits 1 (probe deleted afterwards); the render test asserts header tagline, nav labels and page copy flip together with `<html lang>`.
 DEPENDENCIES: P1-01.
+REMAINING: content strings stay key-based and are validated separately (ADR-0007 / P1-04); `docs/product/LANGUAGE_STYLE.md` and native-speaker review of catalog wording remain owner-side follow-ups (SAFETY.md §13).
 
-## P1-03 — Child app shell — **TODO**
+## P1-03 — Child app shell — **PARTIAL (shell DONE 2026-10-08; device install pending)**
 
 GOAL: One PWA (`apps/app`) with route-guarded child and parent areas; Home, Explore, Create, Projects, Me navigation.
 REQUIREMENTS: installable, offline shell via service worker, keyboard + touch accessible, reduced motion, stage presets applied via `data-stage`.
+DONE (2026-10-08): `apps/app` React + Vite PWA — hash router with child area (Home/Explore/Create/Projects/Me) and parent area (Overview/Progress/Portfolio/Safety/Settings) behind a route gate with dialog semantics, focus trap and Escape/"Not now" exit; manifest + generated icons + `sw.js` v2 that precaches the shell and the assets its HTML references at install (verified: with the preview server killed, the production build renders and routes fully from cache); `data-stage` preset switching from the header/Settings; bilingual en + zh-Hant everywhere incl. nav labels and `document.documentElement.lang`; nav is a fixed bottom bar under 600 px and a bar under the header above (never absent — DESIGN_SYSTEM §4); token-only shell CSS (gate scrim via `color-mix`), no raw `rgba`; `user-scalable=no` removed so text scales to 200 %; `aria-current="page"` on the active nav item; icons render as real inline SVG (no markup-as-text) with visible labels as the accessible name; disabled state used for features that arrive with P1-09/P1-12. `pnpm check` green (typecheck, lint, 131 tests incl. preview freshness + axe, content validation).
+REMAINING: install on the real phone and tablet (needs the physical devices); Playwright mobile/tablet viewport suite (verified locally with agent-browser at 390 px and 1280 px instead); offline smoke test passed locally against the production build with the server stopped.
+ACCEPTANCE CRITERIA: app installs on the real phone and tablet; shell works offline. Offline ✓ local; device install PENDING.
 TEST PLAN: Playwright mobile/tablet viewports; offline shell smoke test.
-ACCEPTANCE CRITERIA: app installs on the real phone and tablet; shell works offline.
-DEPENDENCIES: P0-04.
+DEPENDENCIES: P0-04. APPROVAL REQUIRED: No.
 
 ## P1-04 — Content loader — **TODO**
 

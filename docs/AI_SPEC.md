@@ -281,7 +281,9 @@ Adaptive difficulty, interest discovery, project recommendations, AI-generated p
 
 ## 16. Open decisions for the owner
 
-1. Choose the live AI provider and model after the P0-05 checklist.
-2. Set the monthly AI cap and per-child daily cap.
-3. Confirm default transcript retention (90 days proposed).
-4. Decide when, after Phase 1 playtests, to enable live help for Explorer and Maker at all.
+**Decided 2026-10-06 (owner):** **No live AI in Phase 1.** The mentor runs from pre-written hint ladders only; `MentorService` ships with no provider configured (`liveAiEnabled: false`, provider absent). Items 1 and 2 below are therefore **deferred to Phase 2** — they must be revisited (P0-05 checklist, caps, provider terms) before any live call is ever enabled. This is the documented default in `docs/CURRENT_STATE.md`.
+
+1. ~~Choose the live AI provider and model after the P0-05 checklist.~~ — Deferred to Phase 2 (no live AI in Phase 1).
+2. ~~Set the monthly AI cap and per-child daily cap.~~ — Deferred to Phase 2; `BudgetGuard` stays in the code with owner-set limits required before enabling.
+3. Confirm default transcript retention (90 days proposed). — Still open; Phase 1 stores no AI messages at all.
+4. Decide when, after Phase 1 playtests, to enable live help for Explorer and Maker at all. — Still open; earliest at the Phase 1 decision gate (ROADMAP §6).

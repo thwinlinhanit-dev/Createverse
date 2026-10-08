@@ -1,7 +1,7 @@
 export * from "./contrast.ts";
 
-import presetsJson from "./presets.json";
-import tokensJson from "./tokens.json";
+import presetsJson from "./presets.json" with { type: "json" };
+import tokensJson from "./tokens.json" with { type: "json" };
 
 /**
  * Design tokens — DESIGN_SYSTEM.md §2.

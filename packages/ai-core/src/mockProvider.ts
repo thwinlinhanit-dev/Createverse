@@ -12,8 +12,13 @@ export interface MockProviderOptions {
 export class MockAIProvider implements AIProvider {
   readonly id = "mock";
   readonly calls: AIRequest[] = [];
+  // Explicit field (not a parameter property): Node runs package sources in
+  // strip-only TypeScript mode, which rejects parameter properties.
+  private readonly opts: MockProviderOptions;
 
-  constructor(private readonly opts: MockProviderOptions = {}) {}
+  constructor(opts: MockProviderOptions = {}) {
+    this.opts = opts;
+  }
 
   async complete(req: AIRequest): Promise<AIResponse> {
     this.calls.push(req);
