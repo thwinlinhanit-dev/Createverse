@@ -5,6 +5,30 @@ const SHELL_URLS = [
   "/manifest.json",
 ];
 
+// P1-04: precache the compiled content bundles listed in
+// /content/manifest.json (written by apps/app/scripts/gen-content.ts), so the
+// current project keeps working offline after the first visit. Best effort:
+// a missing manifest or bundle must not fail the install.
+async function precacheContentBundles(cache) {
+  try {
+    const response = await fetch("/content/manifest.json", { cache: "no-cache" });
+    if (!response.ok) return;
+    const manifest = await response.json();
+    const bundles = Array.isArray(manifest?.bundles) ? manifest.bundles : [];
+    await Promise.allSettled(
+      bundles
+        .filter((url) => typeof url === "string" && url.startsWith("/content/"))
+        .map(async (url) => {
+          const res = await fetch(url, { cache: "no-cache" });
+          if (res.ok) await cache.put(url, res);
+        }),
+    );
+  } catch {
+    // Offline on first install, or manifest not published yet: the runtime
+    // loader fetches (and then caches) bundles on demand instead.
+  }
+}
+
 // Install: precache the shell AND the assets its HTML references so the app
 // opens offline on the FIRST revisit. Assets fetched before this worker
 // controls the page would otherwise never enter the cache (P1-03 offline shell).
@@ -12,6 +36,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then(async (cache) => {
       await cache.addAll(SHELL_URLS);
+      await precacheContentBundles(cache);
 
       // Best effort: parse the shell HTML for src/href references and cache
       // them too. Individual failures must not fail the whole install.

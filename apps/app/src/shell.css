@@ -509,3 +509,196 @@
     transition: none;
   }
 }
+
+/* ---- project runner + bridge lab (P1-04/P1-05) ---- */
+.cv-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.cv-notice {
+  background: var(--cv-color-surface-alt);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-radius-md);
+  padding: var(--cv-space-4);
+  margin: var(--cv-space-4) 0;
+}
+
+.cv-notice h3 {
+  margin: 0 0 var(--cv-space-2);
+  font-size: var(--cv-font-size-body);
+  color: var(--cv-color-warning-text);
+}
+
+.cv-notice p {
+  margin: 0;
+}
+
+.cv-step-list {
+  list-style: none;
+  margin: 0 0 var(--cv-space-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cv-space-3);
+}
+
+.cv-step-item {
+  background: var(--cv-color-surface);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-radius-md);
+  padding: var(--cv-space-3) var(--cv-space-4);
+}
+
+.cv-step-state {
+  display: inline-block;
+  background: var(--cv-color-accent);
+  color: var(--cv-color-on-accent);
+  border-radius: var(--cv-radius-full);
+  padding: var(--cv-space-1) var(--cv-space-3);
+  margin-right: var(--cv-space-2);
+  font-size: var(--cv-font-size-small);
+}
+
+.cv-lab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cv-space-3);
+}
+
+.cv-lab-canvas-wrap {
+  position: relative;
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-radius-md);
+  overflow: hidden;
+  background: var(--cv-color-surface);
+  touch-action: manipulation;
+}
+
+.cv-lab-canvas-wrap:focus-visible {
+  outline: 3px solid var(--cv-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.cv-lab-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cv-lab-crosshair {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border: 3px solid var(--cv-color-focus-ring);
+  border-radius: var(--cv-radius-full);
+  pointer-events: none;
+}
+
+.cv-lab-crosshair--pending {
+  border-color: var(--cv-color-accent);
+  background: var(--cv-color-accent);
+  opacity: 0.6;
+}
+
+.cv-lab-tray,
+.cv-lab-vehicles,
+.cv-lab-materials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cv-space-2);
+}
+
+.cv-lab-tray .cv-chip,
+.cv-lab-vehicles .cv-chip,
+.cv-lab-materials .cv-chip {
+  min-height: var(--cv-touch-target);
+  align-items: center;
+}
+
+.cv-button--active {
+  outline: 3px solid var(--cv-color-focus-ring);
+  outline-offset: 2px;
+}
+
+.cv-lab-result {
+  border: 2px solid var(--cv-color-border);
+  border-left-width: var(--cv-space-2);
+  border-radius: var(--cv-radius-md);
+  padding: var(--cv-space-3) var(--cv-space-4);
+  background: var(--cv-color-surface);
+}
+
+.cv-lab-result h3 {
+  margin: 0 0 var(--cv-space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--cv-space-2);
+}
+
+.cv-lab-result p {
+  margin: 0;
+}
+
+.cv-lab-result--success {
+  border-left-color: var(--cv-color-success);
+}
+
+.cv-lab-result--fail {
+  border-left-color: var(--cv-color-danger);
+}
+
+.cv-lab-error-text {
+  color: var(--cv-color-danger);
+  font-size: var(--cv-font-size-body);
+  margin: 0;
+}
+
+.cv-lab-log ol {
+  margin: var(--cv-space-2) 0;
+  padding-left: var(--cv-space-5);
+}
+
+.cv-hint-panel {
+  background: var(--cv-color-surface-alt);
+  border-radius: var(--cv-radius-md);
+  padding: var(--cv-space-3) var(--cv-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cv-space-2);
+  align-items: flex-start;
+}
+
+.cv-hint-text {
+  margin: 0;
+}
+
+.cv-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cv-space-2);
+  margin: var(--cv-space-3) 0;
+}
+
+.cv-field-label {
+  font-size: var(--cv-font-size-small);
+  color: var(--cv-color-text-muted);
+}
+
+.cv-field-input {
+  font: inherit;
+  color: var(--cv-color-text);
+  background: var(--cv-color-surface);
+  border: 2px solid var(--cv-color-border);
+  border-radius: var(--cv-radius-sm);
+  padding: var(--cv-space-3);
+  min-height: var(--cv-touch-target);
+}

@@ -1,12 +1,45 @@
 import { useApp } from "../../AppContext";
 import { stageAgeKey, useT } from "../../i18n";
 import { Button, Card, Chip } from "../../components/ui";
+import { useBundle } from "../../content/useBundle.ts";
+import { useProgressStore } from "../../progress/useProgress.ts";
 
+/**
+ * Overview: learning evidence first, time last (DESIGN_SYSTEM §7).
+ * Completed-project count, concepts and skills are real on-device data
+ * (P1-05 store); interests and suggestions stay descriptive until P1-06.
+ */
 export default function OverviewPage() {
   const { profile, navigateTo } = useApp();
   const t = useT();
+  const stage = profile.stage === "parent" ? null : profile.stage;
+  const { bundle } = useBundle(profile.language, stage ?? "junior");
+  const { store, ready } = useProgressStore(profile.id);
 
+  const summary = ready && store ? store.summary() : null;
   const stageLabel = t(stageAgeKey(profile.stage));
+
+  function conceptName(id: string): string {
+    const node = bundle?.graph.concepts.find((c) => c.id === id);
+    const key = node?.name_key;
+    if (key && bundle) return bundle.messages[key] ?? id;
+    return id;
+  }
+
+  function skillName(id: string): string {
+    const node = bundle?.graph.skills.find((s) => s.id === id);
+    const key = node?.name_key;
+    if (key && bundle) return bundle.messages[key] ?? id;
+    return id;
+  }
+
+  const concepts = summary && summary.conceptsSeen.length > 0
+    ? summary.conceptsSeen.map(conceptName).join(" · ")
+    : null;
+  const skills = summary && summary.skillsPracticed.length > 0
+    ? summary.skillsPracticed.map(skillName).join(" · ")
+    : null;
+  const completed = summary?.completedCount ?? 0;
 
   return (
     <>
@@ -20,19 +53,19 @@ export default function OverviewPage() {
         />
         <Card
           label={t("overview.concepts.label")}
-          body={t("overview.concepts.body")}
+          body={concepts ?? t("overview.concepts.body")}
         />
-        <Card label={t("overview.skills.label")} body={t("overview.skills.body")} />
+        <Card label={t("overview.skills.label")} body={skills ?? t("overview.skills.body")} />
       </section>
 
       <section className="cv-page-section">
         <h3 className="cv-page-section-title">{t("overview.completed.title")}</h3>
         <div className="cv-parent-meta">
-          <Chip label="0" />
+          <Chip label={String(completed)} />
           <Chip label={t("project.bridge.title")} />
         </div>
         <p className="cv-page-empty">
-          {t("overview.completed.count", { count: 0 })}
+          {t("overview.completed.count", { count: completed })}
         </p>
       </section>
 

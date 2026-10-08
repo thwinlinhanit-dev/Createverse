@@ -27,6 +27,9 @@ interface AppState {
   readonly route: Route;
   readonly area: "child" | "parent";
   readonly isParentGateOpen: boolean;
+  /** P1-05 runner selection: which project (and step) the runner screens show. */
+  readonly projectId: string | null;
+  readonly stepId: string | null;
 }
 
 interface AppActions {
@@ -34,6 +37,8 @@ interface AppActions {
   setProfileLanguage: (language: ChildProfile["language"]) => void;
   confirmParentGate: () => void;
   navigateTo: (hash: string) => void;
+  openProject: (projectId: string) => void;
+  openStep: (projectId: string, stepId: string) => void;
 }
 
 type AppContextValue = AppState & AppActions;
@@ -62,6 +67,8 @@ export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE)
   const [route, setRoute] = useState<Route>(() => routeFromHash(location.hash));
   const [isParentGateOpen, setIsParentGateOpen] = useState(false);
   const [wereInParent, setWereInParent] = useState(false);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [stepId, setStepId] = useState<string | null>(null);
 
   const setProfileStage = (stage: ChildProfile["stage"]) =>
     setProfileRaw((prev) =>
@@ -81,6 +88,18 @@ export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE)
       history.pushState(null, "", next);
       window.dispatchEvent(new HashChangeEvent("hashchange"));
     }
+  };
+
+  const openProject = (nextProjectId: string) => {
+    setProjectId(nextProjectId);
+    setStepId(null);
+    navigateTo("#project");
+  };
+
+  const openStep = (nextProjectId: string, nextStepId: string) => {
+    setProjectId(nextProjectId);
+    setStepId(nextStepId);
+    navigateTo("#project/step");
   };
 
   // Keep `route` in sync with the browser hash (back/forward buttons, deep links).
@@ -123,20 +142,28 @@ export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE)
       route,
       area,
       isParentGateOpen,
+      projectId,
+      stepId,
       setProfileStage,
       setProfileLanguage,
       confirmParentGate,
       navigateTo,
+      openProject,
+      openStep,
     }),
     [
       profile,
       route,
       area,
       isParentGateOpen,
+      projectId,
+      stepId,
       setProfileStage,
       setProfileLanguage,
       confirmParentGate,
       navigateTo,
+      openProject,
+      openStep,
     ],
   );
 

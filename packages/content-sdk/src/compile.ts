@@ -2,6 +2,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   AssessmentSchema,
+  BUNDLE_FORMAT,
+  BUNDLE_SCHEMA_VERSION,
   ConceptSchema,
   CONFIGURED_STAGES,
   ExperienceSpecSchema,
@@ -40,8 +42,7 @@ import { collectMessageKeys, parseArray, parseOne } from "./helpers.ts";
  * app can cache them aggressively (service worker, ADR-0002).
  */
 
-export const BUNDLE_FORMAT = "createverse.content-bundle";
-export const BUNDLE_SCHEMA_VERSION = 1;
+export { BUNDLE_FORMAT, BUNDLE_SCHEMA_VERSION };
 
 export interface ContentBundle {
   readonly format: typeof BUNDLE_FORMAT;

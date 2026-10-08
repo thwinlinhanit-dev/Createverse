@@ -5,18 +5,23 @@
   "type": "module",
   "scripts": {
     "css": "node scripts/gen-css.ts",
-    "dev": "node scripts/gen-css.ts && vite",
-    "build": "node scripts/gen-css.ts && vite build",
+    "content": "node scripts/gen-content.ts",
+    "dev": "node scripts/gen-css.ts && node scripts/gen-content.ts && vite",
+    "build": "node scripts/gen-css.ts && node scripts/gen-content.ts && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@createverse/design-tokens": "workspace:*",
+    "@createverse/experience-runtime": "workspace:*",
     "@createverse/i18n": "workspace:*",
+    "@createverse/learning-core": "workspace:*",
+    "@createverse/shared-types": "workspace:*",
     "@createverse/ui": "workspace:*",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@createverse/content-sdk": "workspace:*",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",

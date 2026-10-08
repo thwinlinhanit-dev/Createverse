@@ -3,7 +3,7 @@ import { useT } from "../../i18n";
 import { Button, Card, Chip } from "../../components/ui";
 
 export default function CreatePage() {
-  const { navigateTo } = useApp();
+  const { openProject } = useApp();
   const t = useT();
 
   return (
@@ -26,7 +26,7 @@ export default function CreatePage() {
           <div className="cv-page-actions">
             <Button
               label={t("create.start")}
-              onClick={() => navigateTo("#projects")}
+              onClick={() => openProject("project.bridge")}
             />
           </div>
         </div>

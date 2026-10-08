@@ -14,6 +14,8 @@ import ExplorePage from "./pages/child/Explore";
 import CreatePage from "./pages/child/Create";
 import ProjectsPage from "./pages/child/Projects";
 import MePage from "./pages/child/Me";
+import ProjectDetailPage from "./pages/child/ProjectDetail";
+import StepRunnerPage from "./pages/child/StepRunner";
 import OverviewPage from "./pages/parent/Overview";
 import ProgressPage from "./pages/parent/Progress";
 import PortfolioPage from "./pages/parent/Portfolio";
@@ -27,6 +29,8 @@ const CHILD_PAGES: Record<ChildRoute, React.ComponentType> = {
   create: CreatePage,
   projects: ProjectsPage,
   me: MePage,
+  project: ProjectDetailPage,
+  projectStep: StepRunnerPage,
 };
 
 const PARENT_PAGES: Record<ParentRoute, React.ComponentType> = {

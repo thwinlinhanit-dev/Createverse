@@ -455,6 +455,32 @@ export class WebExperienceRuntime implements ExperienceRuntime {
     return this.domain?.getForceView() ?? [];
   }
 
+  /**
+   * Read-only design facts for the app HUD (EXPERIENCE_RUNTIME.md §7: the HUD
+   * is DOM, owned by the app). Counts and cost come from the domain so the
+   * display can never disagree with enforcement; the tray options themselves
+   * still come from the spec and the domain rejects anything out of bounds.
+   */
+  getDesignInfo(): {
+    pieces: number;
+    cost: number;
+    budget: number;
+    maxPieces: number;
+    vehicleId: string;
+    buildEnabled: boolean;
+  } {
+    const domain = this.domain;
+    if (!domain) throw new Error("runtime not loaded");
+    return {
+      pieces: domain.getPieceCount(),
+      cost: domain.getCost(),
+      budget: domain.budget,
+      maxPieces: domain.maxPieces,
+      vehicleId: domain.getVehicleId(),
+      buildEnabled: domain.buildEnabled,
+    };
+  }
+
   dispose(): void {
     this.pause();
     this.domain?.dispose();

@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  BUNDLE_FORMAT,
+  BUNDLE_SCHEMA_VERSION,
+  ContentBundleSchema,
   ExperienceSpecSchema,
   HintLadderSchema,
   ProgressEventSchema,
   ProjectSchema,
   SkillSchema,
+  type ContentBundle,
   type Project,
 } from "./index.ts";
 
@@ -170,5 +174,98 @@ describe("ProgressEventSchema", () => {
   it("rejects a non-ISO timestamp", () => {
     const result = ProgressEventSchema.safeParse({ ...validEvent, occurred_at: "yesterday" });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("ContentBundleSchema (P1-04 runtime loader gate)", () => {
+  const validBundle: ContentBundle = {
+    format: BUNDLE_FORMAT,
+    schemaVersion: BUNDLE_SCHEMA_VERSION,
+    locale: "en",
+    stage: "junior",
+    graph: {
+      concepts: [
+        {
+          id: "concept.force",
+          version: 1,
+          name_key: "concept.force.name",
+          prerequisites: [],
+          tags: ["physics"],
+        },
+      ],
+      skills: [
+        {
+          id: "skill.experimentation",
+          version: 1,
+          name_key: "skill.experimentation.name",
+          levels: 5,
+        },
+      ],
+      interests: [
+        {
+          id: "interest.engineering",
+          version: 1,
+          name_key: "interest.engineering.name",
+          parent: null,
+        },
+      ],
+    },
+    projects: [validProject],
+    steps: [
+      {
+        id: "step.bridge.j1",
+        version: 1,
+        type: "intro",
+        status: "draft",
+        prompt_key: "step.bridge.j1.prompt",
+        concepts: [],
+        skills: [],
+        extensions: [],
+      },
+    ],
+    ladders: [
+      {
+        id: "hints.bridge.j1",
+        version: 1,
+        solution_allowed_after: 3,
+        levels: [
+          { level: 1, type: "ask", text_key: "hints.bridge.j1.1" },
+          { level: 2, type: "hint", text_key: "hints.bridge.j1.2" },
+          { level: 3, type: "smaller_hint", text_key: "hints.bridge.j1.3" },
+          { level: 4, type: "demonstrate", text_key: "hints.bridge.j1.4" },
+        ],
+        status: "draft",
+      },
+    ],
+    assessments: [],
+    experiences: [],
+    messages: { "step.bridge.j1.prompt": "Look at the gap." },
+  };
+
+  it("accepts a valid bundle", () => {
+    expect(ContentBundleSchema.safeParse(validBundle).success).toBe(true);
+  });
+
+  it("rejects a bundle with the wrong format marker (stale cache, wrong file)", () => {
+    const result = ContentBundleSchema.safeParse({ ...validBundle, format: "other" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a bundle with a newer schema version (needs an upgrader, not a silent load)", () => {
+    const result = ContentBundleSchema.safeParse({
+      ...validBundle,
+      schemaVersion: BUNDLE_SCHEMA_VERSION + 1,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a bundle whose locale or stage does not match the file it came from", () => {
+    // The loader checks this separately too; the schema pins the value sets.
+    expect(
+      ContentBundleSchema.safeParse({ ...validBundle, locale: "fr" }).success,
+    ).toBe(false);
+    expect(
+      ContentBundleSchema.safeParse({ ...validBundle, stage: "inventor" }).success,
+    ).toBe(false);
   });
 });

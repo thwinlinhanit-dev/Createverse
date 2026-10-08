@@ -27,7 +27,7 @@ import type { IconName } from "@createverse/ui";
 import type { MessageKey } from "@createverse/i18n";
 
 
-export type ChildRoute = "home" | "explore" | "create" | "projects" | "me";
+export type ChildRoute = "home" | "explore" | "create" | "projects" | "me" | "project" | "projectStep";
 export type ParentRoute = "parent:overview" | "parent:progress" | "parent:portfolio" | "parent:safety" | "parent:settings";
 export type Route = ChildRoute | ParentRoute;
 
@@ -42,6 +42,11 @@ export function routeFromHash(hash: string): Route {
   if (h === "#create") return "create";
   if (h === "#projects") return "projects";
   if (h === "#me") return "me";
+  // P1-05 project runner: detail and step screens. The selected project/step
+  // live in AppContext (and in the persisted runner position), never in the
+  // hash, so a reload falls back gracefully instead of 404ing on stale ids.
+  if (h === "#project") return "project";
+  if (h === "#project/step") return "projectStep";
   if (h === "#parent/overview") return "parent:overview";
   if (h === "#parent/progress") return "parent:progress";
   if (h === "#parent/portfolio") return "parent:portfolio";
@@ -71,9 +76,18 @@ export const PARENT_LINKS: ReadonlyArray<{ route: ParentRoute; hash: string; lab
   { route: "parent:settings", hash: "#parent/settings", labelKey: "nav.parent.settings", icon: "lock" },
 ];
 
-/** Child area routes only (bottom nav). */
+/** Child area routes only (bottom nav shows the five main ones; the project
+ * runner screens are child-area too but reached from Explore/Projects). */
 export function isChildRoute(route: Route): route is ChildRoute {
-  return (route === "home" || route === "explore" || route === "create" || route === "projects" || route === "me");
+  return (
+    route === "home" ||
+    route === "explore" ||
+    route === "create" ||
+    route === "projects" ||
+    route === "me" ||
+    route === "project" ||
+    route === "projectStep"
+  );
 }
 
 /** Parent area routes only (hidden behind the gate). */

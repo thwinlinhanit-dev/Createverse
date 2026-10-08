@@ -138,4 +138,21 @@ describe("bridge fixtures", () => {
     expect(r.forceView.length).toBe(1);
     expect(r.forceView[0]?.pieceId).toBe("p1");
   });
+  it("getDesignInfo agrees with enforcement", async () => {
+    const spec = ExperienceSpecSchema.parse(BASE_SPEC);
+    const rt = new WebExperienceRuntime();
+    rt.onEvent(() => {});
+    await rt.load(spec, CTX);
+    rt.dispatch({ kind: "place_piece", pieceType: "plank", material: "wood",
+      x1: 0, y1: 0, x2: 3, y2: 0 });
+    expect(rt.getDesignInfo()).toMatchObject({
+      pieces: 1,
+      maxPieces: 5,
+      budget: 50,
+      vehicleId: "car",
+      buildEnabled: true,
+    });
+    expect(rt.getDesignInfo().cost).toBeGreaterThan(0);
+    rt.dispose();
+  });
 });

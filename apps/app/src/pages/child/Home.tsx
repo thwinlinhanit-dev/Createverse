@@ -1,15 +1,32 @@
 import { useApp } from "../../AppContext";
 import { useT } from "../../i18n";
 import { Button, Card, Chip } from "../../components/ui";
+import { useProgressStore } from "../../progress/useProgress.ts";
 
 export default function HomePage() {
-  const { navigateTo } = useApp();
+  const { profile, openProject, openStep } = useApp();
   const t = useT();
+  const { store, ready } = useProgressStore(profile.id);
 
   // Time-of-day period for the ICU select in home.greeting (code, not copy).
   const hour = new Date().getHours();
   const period = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
   const greeting = t("home.greeting", { period });
+
+  function continueBuilding(): void {
+    if (ready && store) {
+      const position = store.getPosition();
+      if (position && position.stepId) {
+        openStep(position.projectId, position.stepId);
+        return;
+      }
+      if (store.findOpenInstance("project.bridge")) {
+        openProject("project.bridge");
+        return;
+      }
+    }
+    openProject("project.bridge");
+  }
 
   return (
     <>
@@ -20,7 +37,7 @@ export default function HomePage() {
         <h3 className="cv-page-section-title">{t("home.continue.title")}</h3>
         <Card label={t("project.bridge.title")} body={t("project.bridge.body")} />
         <div className="cv-page-actions">
-          <Button label={t("button.continue")} onClick={() => navigateTo("#projects")} />
+          <Button label={t("button.continue")} onClick={continueBuilding} />
         </div>
       </section>
 
@@ -31,7 +48,7 @@ export default function HomePage() {
           <Button
             label={t("home.challenge.cta")}
             secondary
-            onClick={() => navigateTo("#explore")}
+            onClick={() => openProject("project.bridge")}
           />
         </div>
       </section>

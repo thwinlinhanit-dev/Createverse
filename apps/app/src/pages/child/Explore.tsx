@@ -2,9 +2,14 @@ import { useApp } from "../../AppContext";
 import { useT } from "../../i18n";
 import { Button, Card, Chip } from "../../components/ui";
 
+/**
+ * Explore: the project shelf. "Start" and "Read the story" both open the
+ * real Build a Bridge project detail (P1-05) for the child's stage.
+ */
 export default function ExplorePage() {
-  const { navigateTo } = useApp();
+  const { openProject } = useApp();
   const t = useT();
+  const openBridge = () => openProject("project.bridge");
 
   return (
     <>
@@ -14,11 +19,11 @@ export default function ExplorePage() {
       <section className="cv-page-section">
         <Card label={t("project.bridge.title")} body={t("project.bridge.body")} />
         <div className="cv-page-actions">
-          <Button label={t("explore.start")} onClick={() => navigateTo("#projects")} />
+          <Button label={t("explore.start")} onClick={openBridge} />
           <Button
             label={t("explore.story")}
             secondary
-            onClick={() => navigateTo("#projects")}
+            onClick={openBridge}
           />
         </div>
       </section>
