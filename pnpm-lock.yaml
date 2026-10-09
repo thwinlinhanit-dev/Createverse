@@ -96,6 +96,9 @@ importers:
 
   backend:
     dependencies:
+      '@createverse/learning-core':
+        specifier: workspace:*
+        version: link:../packages/learning-core
       '@createverse/shared-types':
         specifier: workspace:*
         version: link:../packages/shared-types

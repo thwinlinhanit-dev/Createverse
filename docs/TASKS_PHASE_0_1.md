@@ -179,11 +179,12 @@ TEST PLAN: upload allowlist and size-limit tests; entry→artifact referential t
 ACCEPTANCE CRITERIA: a completed project produces an entry visible to child and parent.
 DEPENDENCIES: P1-05.
 
-## P1-10 — Parent overview — **TODO**
+## P1-10 — Parent overview — **DONE (2026-10-09)**
 
 GOAL: Concepts, skills, projects, interests, struggles, next suggestions; time and content controls.
 REQUIREMENTS: learning-first composition (DESIGN_SYSTEM §7); no screen-time-first dashboard; controls enforced server-side (API_SPEC §6.4).
-CLIENT SLICE DONE (2026-10-09): parent Overview renders the P1-06 evidence rows — `store.skillEvidence()` with configured levels + assessments from the content bundle — as `overview.concepts.row` / `overview.skills.row` (name, numeric level, evidence count) in en + zh-Hant; numeric levels live here (FR-40 parent view) while the child's Me screen keeps "no levels"; `overview.test.tsx` renders the real shell, passes the gate, and asserts rows in both locales plus the empty-state fallback. Remaining: server-side parts (family-scoped overview endpoint, settings step-up) wait on P1-08.
+DONE (2026-10-09): parent Overview renders the P1-06 evidence rows — `store.skillEvidence()` with configured levels + assessments from the content bundle — as `overview.concepts.row` / `overview.skills.row` (name, numeric level, evidence count) in en + zh-Hant; numeric levels live here (FR-40 parent view) while the child's Me screen keeps "no levels"; `overview.test.tsx` renders the real shell, passes the gate, and asserts rows in both locales plus the empty-state fallback.
+SERVER DONE (2026-10-09): `GET /children/:childId/overview` (parent, family-scoped 404 cross-family) derives skills/concepts with `replayEvidence` over `progress_events`, plus projects (`child.project.completed`), interests (`child.interest.detected` weight sums), struggles (repeated failed activity per content) and suggestions (content order minus completed, ≤3, never engagement-ranked) from injected `AppOptions.overviewContent` (levels/assessments/experience order); `PATCH /children/:childId/settings` (parent) upserts into `child_settings` and enforces the step-up inside the handler for safety and AI fields (§5 "parent (+fresh…)") while time/read-aloud stay in the normal parent window; audit `child.settings` records field names only. Tests: `backend/test/overview_settings.test.ts` (12) + generated matrix rows.
 TEST PLAN: overview endpoint scoped by family; settings change requires step-up.
 ACCEPTANCE CRITERIA: overview reads as learning evidence, not metrics; time is last.
 DEPENDENCIES: P1-08.

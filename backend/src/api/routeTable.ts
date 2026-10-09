@@ -50,6 +50,7 @@ export const ROUTES: RouteDef[] = [
   { method: "GET", path: "/children", role: "parent", limit: "session", note: "List profiles" },
   { method: "POST", path: "/children", role: "parent+fresh", limit: "session", note: "Create child (child cannot self-register)" },
   { method: "PATCH", path: "/children/:childId", role: "parent", limit: "session", note: "Edit name, stage, locale, avatar" },
+  { method: "PATCH", path: "/children/:childId/settings", role: "parent", limit: "session", note: "Time/content/AI settings; handler step-up for safety and AI fields (API_SPEC §5.3)" },
   { method: "PATCH", path: "/children/:childId/pin", role: "parent+fresh", limit: "session", note: "Set or clear PIN" },
   { method: "POST", path: "/children/:childId/open", role: "device", limit: "auth", note: "Open child profile on device" },
 
@@ -58,6 +59,7 @@ export const ROUTES: RouteDef[] = [
 
   // API_SPEC §5.10 — export (P1-08: events queryable per child)
   { method: "GET", path: "/children/:childId/export/events", role: "parent+fresh", limit: "session", note: "Paged events for one child" },
+  { method: "GET", path: "/children/:childId/overview", role: "parent", limit: "session", note: "Learning-first overview (API_SPEC §5.8)" },
 
   // API_SPEC §5.11 — health
   { method: "GET", path: "/health", role: "public", limit: "none", note: "Liveness" },

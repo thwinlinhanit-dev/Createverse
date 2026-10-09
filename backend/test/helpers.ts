@@ -10,6 +10,7 @@ import { createHash, generateKeyPairSync, randomBytes, sign } from "node:crypto"
 import type { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { createApp } from "../src/api/app.ts";
+import type { AppOptions } from "../src/api/app.ts";
 import type { AppEnv } from "../src/api/middleware.ts";
 import { resetRateLimits } from "../src/api/middleware.ts";
 import { openDb } from "../src/db/index.ts";
@@ -186,9 +187,12 @@ export interface TestApp {
   db: Db;
 }
 
-export function buildApp(): TestApp {
+export function buildApp(overrides: Partial<AppOptions> = {}): TestApp {
   const db = openDb(":memory:");
   const app = createApp({
+    // Extra options (e.g. overviewContent) pass through; the core fields
+    // below stay owned by buildApp so every suite boots the same server.
+    ...overrides,
     db,
     setupSecret: TEST_SETUP_SECRET,
     allowedOrigin: TEST_ORIGIN,

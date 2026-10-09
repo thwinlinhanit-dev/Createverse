@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppEnv } from "./middleware.ts";
+import type { AppEnv, OverviewContent } from "./middleware.ts";
 import { requireRole, securityHeaders } from "./middleware.ts";
 import { ROUTES, fullPath } from "./routeTable.ts";
 import { ApiError, errorBody } from "./errors.ts";
@@ -14,6 +14,8 @@ export interface AppOptions {
   /** Only this origin may call the API with CORS (API_SPEC §1). */
   allowedOrigin: string | null;
   webauthn: WebAuthnConfig;
+  /** Content inputs for the parent overview (compiled bundle; fixtures in tests). */
+  overviewContent?: OverviewContent;
   /** Injectable clock for tests. */
   now?: () => Date;
   /** Rate-limit overrides (API_SPEC §4 defaults shown in LIMITS). */
@@ -51,6 +53,8 @@ const HANDLERS: Record<string, (c: Parameters<typeof handlers.health>[0]) => Pro
   "POST /children/:childId/open": handlers.openChild,
   "POST /sync/events": handlers.syncEvents,
   "GET /children/:childId/export/events": handlers.exportChildEvents,
+  "GET /children/:childId/overview": handlers.getChildOverview,
+  "PATCH /children/:childId/settings": handlers.patchChildSettings,
   "GET /health": handlers.health,
 };
 
@@ -68,6 +72,7 @@ export function createApp(options: AppOptions): Hono<AppEnv> {
     c.set("deviceId", null);
     c.set("now", (options.now?.() ?? new Date()).toISOString());
     c.set("webauthn", options.webauthn);
+    c.set("overviewContent", options.overviewContent ?? null);
     await next();
   });
   app.use("*", securityHeaders());

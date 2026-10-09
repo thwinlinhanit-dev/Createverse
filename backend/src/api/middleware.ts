@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import type { ReplayAssessment } from "@createverse/learning-core";
 import type { Context, Next } from "hono";
 import { eq } from "drizzle-orm";
 import { ApiError, errorBody } from "./errors.ts";
@@ -25,6 +26,8 @@ export interface AppVars {
   setupSecret: string | null;
   allowedOrigin: string | null;
   webauthn: WebAuthnConfig;
+  /** Content inputs for the parent overview (API_SPEC §5.8); injected once per app. */
+  overviewContent: OverviewContent | null;
 }
 
 export interface AppEnv {
@@ -248,4 +251,32 @@ export function checkSetupSecret(c: Context<AppEnv>, provided: string): boolean 
   const expected = c.get("setupSecret");
   if (!expected) return false;
   return safeEqual(provided, expected);
+}
+
+/* ---------------------------------------------------- P1-10 step-up helpers
+ * Conditional freshness for endpoints where only some fields need the
+ * step-up window (API_SPEC §5.3: "parent (+fresh for safety and AI fields)").
+ * The role gate covers whole-route freshness; this covers per-body decisions.
+ */
+
+export function assertFresh(c: Context<AppEnv>, session: SessionContext): void {
+  const freshAt = session.freshAt ? Date.parse(session.freshAt) : 0;
+  if (Date.parse(c.get("now")) - freshAt > FRESH_WINDOW_MS) {
+    throw new ApiError("fresh_auth_required");
+  }
+}
+
+/**
+ * Content inputs for the parent overview (API_SPEC §5.8). Injected once per
+ * app — the compiled content bundle in production, fixtures in tests. Without
+ * it the endpoint still serves event-derived evidence (default skill levels,
+ * no content-aware suggestions).
+ */
+export interface OverviewContent {
+  /** Skill id → configured level count (content/graph/skills.json). */
+  readonly levelsBySkill?: Readonly<Record<string, number>>;
+  /** Content assessments resolving event signals to skills/concepts (§2.5). */
+  readonly assessments?: readonly ReplayAssessment[];
+  /** Ordered experience ids; suggestions are the first uncompleted ones. */
+  readonly experienceOrder?: readonly string[];
 }

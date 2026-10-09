@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { replayEvidence } from "@createverse/learning-core";
 import { and, asc, eq, sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "./middleware.ts";
 import {
   assertFamily,
+  assertFresh,
   checkSetupSecret,
   hashCredential,
   readJsonBody,
@@ -849,5 +851,235 @@ export async function exportChildEvents(c: Context<AppEnv>): Promise<Response> {
       payload: row.payload,
     })),
     next_cursor: rows.length > limit && last ? `${last.occurredAt}#${last.eventId}` : null,
+  });
+}
+
+/* ------------------------------------------------- P1-10 overview + settings
+ * API_SPEC §5.8 GET /children/:childId/overview — the learning-first parent
+ * overview (PRODUCT_SPEC FR-40: evidence first, time never the headline).
+ * Derived server-side from the append-only event log (DATA_MODEL §4: events
+ * are the source of truth, derived state is replay), using the same pure
+ * replay as the app so both views agree.
+ *
+ * API_SPEC §5.3 PATCH /children/:childId/settings — §6 rule 4: settings are
+ * enforced server-side; the client hides what it may not do, never decides.
+ * Safety and AI fields additionally require the step-up window (§5, §7).
+ */
+
+/** Fields that require step-up: safety and AI settings (API_SPEC §5.3, §6 rule 4). */
+const SETTINGS_SAFETY_AI: ReadonlySet<string> = new Set([
+  "ai_mentor_enabled",
+  "allowed_risk_class",
+  "project_approval_required",
+]);
+
+const ChildSettingsBody = z.strictObject({
+  daily_minutes_limit: z.number().int().min(0).max(600).nullable().optional(),
+  read_aloud_enabled: z.boolean().optional(),
+  ai_mentor_enabled: z.boolean().optional(),
+  project_approval_required: z.boolean().optional(),
+  allowed_risk_class: z.enum(["low", "medium", "high"]).optional(),
+});
+
+function overviewContent(c: Context<AppEnv>): {
+  levelsBySkill?: Readonly<Record<string, number>>;
+  assessments?: readonly import("@createverse/learning-core").ReplayAssessment[];
+  experienceOrder?: readonly string[];
+} {
+  const content = c.get("overviewContent");
+  if (!content) return {};
+  return {
+    ...(content.levelsBySkill ? { levelsBySkill: content.levelsBySkill } : {}),
+    ...(content.assessments ? { assessments: content.assessments } : {}),
+    ...(content.experienceOrder ? { experienceOrder: content.experienceOrder } : {}),
+  };
+}
+
+export async function getChildOverview(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const now = c.get("now");
+  const child = findChild(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId); // cross-family reads answer 404 (§6 rule 1)
+
+  const content = overviewContent(c);
+  const events = db
+    .select()
+    .from(progressEvents)
+    .where(eq(progressEvents.childId, child.id))
+    .all();
+
+  const replay = replayEvidence(
+    events.map((event) => ({
+      type: event.type,
+      occurred_at: event.occurredAt,
+      payload: event.payload as Record<string, unknown>,
+    })),
+    {
+      nowMs: Date.parse(now),
+      ...(content.levelsBySkill ? { levelsBySkill: content.levelsBySkill } : {}),
+      ...(content.assessments ? { assessments: content.assessments } : {}),
+    },
+  );
+
+  // Interests and struggles come straight from their catalogue events
+  // (DATA_MODEL §4: child.interest.detected carries interest_id/weight;
+  // a struggle is repeated failed activity on one piece of content).
+  const projects = new Map<string, string>(); // content_id -> latest completed_at
+  const interests = new Map<string, { weight: number; count: number; lastAt: string }>();
+  const struggles = new Map<string, { count: number; lastAt: string }>();
+
+  for (const event of events) {
+    const payload = event.payload as Record<string, unknown>;
+    if (event.type === "child.project.completed" && event.contentId !== null) {
+      const prev = projects.get(event.contentId);
+      if (prev === undefined || event.occurredAt > prev) {
+        projects.set(event.contentId, event.occurredAt);
+      }
+      continue;
+    }
+    if (event.type === "child.interest.detected") {
+      const interestId = payload["interest_id"];
+      if (typeof interestId === "string") {
+        const rawWeight = payload["weight"];
+        const weight = typeof rawWeight === "number" && Number.isFinite(rawWeight) ? rawWeight : 1;
+        const prev = interests.get(interestId);
+        interests.set(interestId, {
+          weight: (prev?.weight ?? 0) + weight,
+          count: (prev?.count ?? 0) + 1,
+          lastAt:
+            prev === undefined || event.occurredAt > prev.lastAt ? event.occurredAt : prev.lastAt,
+        });
+      }
+      continue;
+    }
+    if (event.type === "child.activity.completed" && event.contentId !== null) {
+      if (payload["outcome"] === "failed") {
+        const prev = struggles.get(event.contentId);
+        struggles.set(event.contentId, {
+          count: (prev?.count ?? 0) + 1,
+          lastAt:
+            prev === undefined || event.occurredAt > prev.lastAt ? event.occurredAt : prev.lastAt,
+        });
+      }
+    }
+  }
+
+  // Suggestions: the next experiences the child has not completed yet, in
+  // content order (never engagement-ranked — PRODUCT_SPEC P3/FR-40).
+  const completed = new Set(projects.keys());
+  const suggestions = (content.experienceOrder ?? [])
+    .filter((id) => !completed.has(id))
+    .slice(0, 3);
+
+  return c.json({
+    child_id: child.id,
+    generated_at: now,
+    skills: replay.skills.map((row) => ({
+      skill_id: row.skillId,
+      level: row.level,
+      evidence_count: row.evidenceCount,
+      last_seen_at: row.lastSeenAt,
+    })),
+    concepts: replay.concepts.map((row) => ({
+      concept_id: row.conceptId,
+      level: row.level,
+      evidence_count: row.evidenceCount,
+      last_seen_at: row.lastSeenAt,
+    })),
+    projects: [...projects.entries()]
+      .map(([contentId, completedAt]) => ({ content_id: contentId, completed_at: completedAt }))
+      .sort((a, b) => (a.content_id < b.content_id ? -1 : a.content_id > b.content_id ? 1 : 0)),
+    interests: [...interests.entries()]
+      .map(([interestId, v]) => ({
+        interest_id: interestId,
+        weight_total: v.weight,
+        count: v.count,
+        last_at: v.lastAt,
+      }))
+      .sort((a, b) =>
+        b.weight_total !== a.weight_total
+          ? b.weight_total - a.weight_total
+          : a.interest_id < b.interest_id
+            ? -1
+            : 1,
+      ),
+    struggles: [...struggles.entries()]
+      .map(([contentId, v]) => ({
+        content_id: contentId,
+        failed_count: v.count,
+        last_at: v.lastAt,
+      }))
+      .sort((a, b) =>
+        b.failed_count !== a.failed_count
+          ? b.failed_count - a.failed_count
+          : a.content_id < b.content_id
+            ? -1
+            : 1,
+      ),
+    suggestions,
+  });
+}
+
+export async function patchChildSettings(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const body = zodParse(ChildSettingsBody.safeParse(await readJsonBody(c, (d) => d)));
+  if (Object.keys(body).length === 0) throw new ApiError("invalid_request");
+
+  const db = c.get("db");
+  const now = c.get("now");
+  const child = findChild(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId);
+
+  // Step-up only when safety or AI fields change (API_SPEC §5.3, §6 rule 4);
+  // time and read-aloud stay usable in the normal parent window.
+  const keys = Object.keys(body);
+  if (keys.some((key) => SETTINGS_SAFETY_AI.has(key))) {
+    assertFresh(c, session);
+  }
+
+  const patch: Partial<typeof childSettings.$inferInsert> = {};
+  if (body.daily_minutes_limit !== undefined) patch.dailyMinutesLimit = body.daily_minutes_limit;
+  // Integer flag columns (0/1); the API speaks booleans both ways.
+  if (body.read_aloud_enabled !== undefined) patch.readAloudEnabled = body.read_aloud_enabled ? 1 : 0;
+  if (body.ai_mentor_enabled !== undefined) patch.aiMentorEnabled = body.ai_mentor_enabled ? 1 : 0;
+  if (body.project_approval_required !== undefined) {
+    patch.projectApprovalRequired = body.project_approval_required ? 1 : 0;
+  }
+  if (body.allowed_risk_class !== undefined) patch.allowedRiskClass = body.allowed_risk_class;
+  patch.updatedAt = now;
+
+  // Upsert: a child may have no settings row yet; later patches merge into
+  // the existing row so a partial update never resets the other controls.
+  db.insert(childSettings)
+    .values({ childId: child.id, updatedAt: now, ...patch })
+    .onConflictDoUpdate({ target: childSettings.childId, set: patch })
+    .run();
+
+  const rows = db.select().from(childSettings).where(eq(childSettings.childId, child.id)).all();
+  const row = rows[0];
+  if (!row) throw new ApiError("internal"); // just upserted — unreachable
+
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "child.settings",
+    targetType: "child",
+    targetId: child.id,
+    // Field names only, never values (API_SPEC §7: ids and action names).
+    meta: { fields: keys.join(",") },
+  });
+
+  return c.json({
+    id: child.id,
+    updated_at: now,
+    settings: {
+      daily_minutes_limit: row.dailyMinutesLimit,
+      quiet_hours: row.quietHours,
+      read_aloud_enabled: row.readAloudEnabled === 1,
+      ai_mentor_enabled: row.aiMentorEnabled === 1,
+      project_approval_required: row.projectApprovalRequired === 1,
+      allowed_risk_class: row.allowedRiskClass,
+    },
   });
 }
