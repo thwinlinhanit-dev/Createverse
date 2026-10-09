@@ -8,6 +8,9 @@ coverage/
 .vite/
 test-results/
 playwright-report/
+
+# Local/e2e API databases (backend/src/serve.ts)
+var/
 .DS_Store
 .npm-cache/
 

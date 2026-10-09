@@ -1,12 +1,17 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * P1-13 — Accessibility baseline (TESTING.md §9: "axe via Playwright in CI").
+ * P1-13/P1-14 — accessibility + journey suites (TESTING.md §8, §9).
  *
- * The suite drives the real app dev server (`pnpm dev` regenerates CSS and
- * content before starting vite) and runs axe against key screens per language
- * and stage preset. Keep this separate from `pnpm check` (vitest): Playwright
- * needs a browser download, so CI runs it as its own step.
+ * Two servers under test: the real dev app (`pnpm dev` regenerates CSS and
+ * content before vite, /api proxied same-origin) and the real API
+ * (`backend/src/serve.ts --e2e`: fresh SQLite per run, raised rate limits).
+ * The app runs on the localhost origin because WebAuthn RP IDs are hostnames.
+ *
+ * Projects: `chromium` (desktop) runs the axe + auth suites; `phone` and
+ * `tablet` run the child journey (TESTING.md §8: "mobile and tablet
+ * viewports"). Keep `pnpm check` browser-free — CI runs `pnpm test:e2e`
+ * as its own job.
  */
 export default defineConfig({
   testDir: "./e2e",
@@ -15,14 +20,44 @@ export default defineConfig({
   retries: process.env.CI === "true" ? 1 : 0,
   reporter: process.env.CI === "true" ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
-    baseURL: "http://127.0.0.1:5173",
+    baseURL: "http://localhost:5173",
     trace: "on-first-retry",
   },
-  webServer: {
-    command: "pnpm dev",
-    url: "http://127.0.0.1:5173",
-    reuseExistingServer: process.env.CI !== "true",
-    timeout: 120_000,
-  },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  webServer: [
+    {
+      command: "node backend/src/serve.ts --e2e",
+      url: "http://127.0.0.1:8787/api/v1/health",
+      reuseExistingServer: process.env.CI !== "true",
+      timeout: 60_000,
+    },
+    {
+      command: "pnpm dev",
+      url: "http://localhost:5173",
+      reuseExistingServer: process.env.CI !== "true",
+      timeout: 120_000,
+    },
+  ],
+  projects: [
+    {
+      name: "chromium",
+      testIgnore: /journey\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "phone",
+      testMatch: /journey\.spec\.ts/,
+      use: { ...devices["Pixel 7"] },
+    },
+    {
+      name: "tablet",
+      testMatch: /journey\.spec\.ts/,
+      // Chromium + a tablet-sized touch viewport (Playwright's iPad
+      // descriptors default to WebKit, which this suite does not install).
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1024, height: 1366 },
+        hasTouch: true,
+      },
+    },
+  ],
 });

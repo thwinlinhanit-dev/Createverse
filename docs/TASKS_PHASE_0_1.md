@@ -219,7 +219,7 @@ TEST PLAN: axe via Playwright in CI; manual checklist on the real phone and tabl
 ACCEPTANCE CRITERIA: checklist passed; no color-only cues anywhere.
 DEPENDENCIES: P1-03.
 
-## P1-14 — E2E child journey — **TODO**
+## P1-14 — E2E child journey — **DONE (2026-10-09)**
 
 GOAL: Automated Playwright journey: login → choose project → activity → AI hint → finish → portfolio.
 REQUIREMENTS: mobile and tablet viewports, virtual passkey authenticator, both languages, and a run with live AI off (TESTING.md §2).

@@ -63,10 +63,15 @@ export default function StepRunnerPage() {
   const [reflectText, setReflectText] = useState<readonly string[]>([]);
   const [, setHintTick] = useState(0);
 
-  const wantedProject = projectId ?? store?.getPosition()?.projectId ?? "project.bridge";
+  // The store object is exposed before its load() resolves (useProgressStore);
+  // read the persisted position only once ready. Otherwise a reload mid-project
+  // throws "ProgressStore.load() must be awaited first" during render and the
+  // app blanks (root-caused by the P1-14 journey test).
+  const position = ready && store !== null ? store.getPosition() : null;
+  const wantedProject = projectId ?? position?.projectId ?? "project.bridge";
   const project = bundle ? bundle.projects.find((p) => p.id === wantedProject) : undefined;
   const lane = project && stage ? project.lanes[stage] : undefined;
-  const wantedStep = stepId ?? store?.getPosition()?.stepId ?? lane?.steps[0] ?? null;
+  const wantedStep = stepId ?? position?.stepId ?? lane?.steps[0] ?? null;
   const isReflect = wantedStep === REFLECT_STEP;
   const isPortfolio = wantedStep === PORTFOLIO_STEP;
   const step =
@@ -93,12 +98,20 @@ export default function StepRunnerPage() {
       return;
     }
     if (wantedStep === null || isReflect || isPortfolio) {
-      // Pseudo-steps (and the impossible null) need an open instance but no
-      // attempt; without one there is nothing to resume — back to detail.
-      const open = store.findOpenInstance(project.id);
-      if (!open) return;
-      void store.setPosition({ projectId: project.id, instanceId: open.id, stepId: wantedStep });
-      setBoot({ instance: open, attempt: null });
+      // Pseudo-steps need the instance but no attempt. The portfolio step
+      // boots AFTER completeProject marks the instance `completed`, which
+      // findOpenInstance never returns — so prefer the persisted position
+      // (set while the lane ran) and fall back to the open instance for
+      // reflect/resume (root-caused by the P1-14 journey test: the
+      // "Saved to your portfolio" screen was unreachable).
+      const position = store.getPosition();
+      const instance =
+        (position !== null && position.projectId === project.id
+          ? store.getInstance(position.instanceId)
+          : undefined) ?? store.findOpenInstance(project.id);
+      if (!instance) return;
+      void store.setPosition({ projectId: project.id, instanceId: instance.id, stepId: wantedStep });
+      setBoot({ instance, attempt: null });
       return;
     }
     if (step === undefined) return;

@@ -1,4 +1,4 @@
-const CACHE = "createverse-shell-v2";
+const CACHE = "createverse-shell-v3";
 const SHELL_URLS = [
   "/",
   "/index.html",
@@ -100,6 +100,14 @@ self.addEventListener("fetch", (event) => {
 
   // Only handle same-origin requests.
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Never intercept or cache the API (P1-14 e2e caught GET /api/v1/auth/
+  // session being served stale from this cache): auth, sync and child data
+  // have their own privacy and consistency rules, and offline writes go
+  // through the progress store's outbox instead of HTTP caching.
+  if (url.pathname.startsWith("/api/")) {
     return;
   }
 

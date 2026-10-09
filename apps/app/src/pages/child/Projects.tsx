@@ -30,7 +30,9 @@ export default function ProjectsPage() {
   }
 
   function continueProject(projectId: string): void {
-    if (!store || !bundle || stage === null) {
+    // Same pre-ready guard as the render paths: getPosition() throws until
+    // load() resolves, and a click can land in that window.
+    if (!ready || !store || !bundle || stage === null) {
       openProject(projectId);
       return;
     }

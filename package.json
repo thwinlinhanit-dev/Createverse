@@ -25,6 +25,7 @@
     "ai:eval": "node ai/evals/run.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm content:validate",
     "test:e2e": "playwright test",
+    "api:dev": "node backend/src/serve.ts",
     "dev": "pnpm --filter @createverse/app dev"
   },
   "devDependencies": {

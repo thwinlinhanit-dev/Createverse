@@ -20,9 +20,11 @@ jobs:
       - name: check (typecheck, lint, test, content validate)
         run: pnpm check
 
-  # P1-13 (TESTING.md section 9): axe via Playwright in CI — WCAG 2.1 A+AA on
-  # key screens per language and stage preset, plus keyboard placement.
-  a11y:
+  # P1-13 + P1-14 (TESTING.md section 8/9): axe via Playwright, the virtual
+  # passkey ceremony against the real API, and the child journey on phone and
+  # tablet viewports in both languages (live AI off). Playwright starts both
+  # servers itself (API --e2e + vite dev).
+  e2e:
     runs-on: ubuntu-latest
     needs: check
     steps:
@@ -36,7 +38,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
-      - name: Accessibility e2e (axe on key screens)
+      - name: E2E (accessibility + passkey + child journey)
         run: pnpm test:e2e
       - name: Upload Playwright report
         if: failure()
