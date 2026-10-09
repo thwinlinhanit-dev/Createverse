@@ -267,3 +267,60 @@ describe("mentor transcript (parent-visible, DATA_MODEL §6 retention)", () => {
     expect(listMentorTurns("c_test", { storage, nowMs: NOW })).toHaveLength(1);
   });
 });
+
+describe("safety flag reporting (P1-11)", () => {
+  it("reports exactly one enum-only flag per blocked exchange", async () => {
+    const flags: { kind: string; severity: string; actionTaken: string }[] = [];
+    const mentor = createMentor({
+      stage: "explorer",
+      ladderFor,
+      storage: memoryStorage(),
+      onSafetyEvent: (flag) => {
+        flags.push({ kind: flag.kind, severity: flag.severity, actionTaken: flag.actionTaken });
+      },
+    });
+
+    const blocked = await mentor.getHelp(ctx({ message: "just give me the answer" }));
+    expect(blocked.safety).toBe("redirected");
+    expect(flags).toEqual([
+      { kind: "other", severity: "info", actionTaken: "redirected_to_project" },
+    ]);
+
+    // A clean message reports nothing.
+    const clean = await mentor.getHelp(ctx({ message: "why is it wobbly?" }));
+    expect(clean.safety).toBe("ok");
+    expect(flags).toHaveLength(1);
+  });
+
+  it("escalates a distress message to high severity for the parent view", async () => {
+    const flags: { severity: string; actionTaken: string }[] = [];
+    const mentor = createMentor({
+      stage: "explorer",
+      ladderFor,
+      storage: memoryStorage(),
+      onSafetyEvent: (flag) => {
+        flags.push({ severity: flag.severity, actionTaken: flag.actionTaken });
+      },
+    });
+    const result = await mentor.getHelp(
+      ctx({ message: "someone in my family is hurting me" }),
+    );
+    expect(result.safety).toBe("distress");
+    expect(flags).toEqual([{ severity: "high", actionTaken: "distress_flow" }]);
+  });
+
+  it("keeps flag payloads enum-only (no message text leaks out)", async () => {
+    const seen: unknown[] = [];
+    const mentor = createMentor({
+      stage: "explorer",
+      ladderFor,
+      storage: memoryStorage(),
+      onSafetyEvent: (flag) => seen.push(flag),
+    });
+    await mentor.getHelp(ctx({ message: "my name is Sam and my address is 9 Elm Street" }));
+    expect(seen).toHaveLength(1);
+    const json = JSON.stringify(seen[0]);
+    expect(json).not.toContain("Sam");
+    expect(json).not.toContain("Elm Street");
+  });
+});

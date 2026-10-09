@@ -190,12 +190,14 @@ TEST PLAN: overview endpoint scoped by family; settings change requires step-up.
 ACCEPTANCE CRITERIA: overview reads as learning evidence, not metrics; time is last.
 DEPENDENCIES: P1-08.
 
-## P1-11 — Safety v0 — **TODO**
+## P1-11 — Safety v0 — **DONE (2026-10-09)**
 
 GOAL: Input/output filtering, risky-experiment classification, safe alternatives.
 REQUIREMENTS: implement SAFETY.md §2 pipeline stages behind interfaces; rule-based first; every blocked or redirected exchange writes a `safety_events` row with no raw personal data; risk classes enforced (`high` blocked for children).
+DONE (2026-10-09): `packages/ai-core` — `MentorService.getHelp` runs input safety **before** the budget guard and provider (SAFETY §2 order; free classifier, so a blocked message never costs tokens and Phase 1's no-provider build still screens everything); new `SafetyFlag` / `SafetyEventReporter` types + `inputFlagFor`/`outputFlagFor` mappers (enum-only: kind/severity/action_taken) and `distressSeverity` (§10.8 hurting-them → `high`); `onSafetyEvent` reports exactly one flag per blocked/redirected exchange. App: `createMentor({onSafetyEvent})` passthrough, `ProgressStore.recordSafetyFlag()` writes one `ai.safety.flagged` event (payload = closed key set, never the text), `StepRunner` wires it on every hint request. Backend: `safety_events` table (migration `0003_p1_11_safety_events.sql`) + derivation inside the `POST /sync/events` transaction — deterministic id `sev_<event_id>` with `ON CONFLICT DO NOTHING` so retries stay idempotent, enum validation rejects unknown kind/severity, message text never stored; `GET /children/:childId/safety-events` (parent, sorted high→warn→info then newest) and `POST /safety-events/:eventId/review` (parent, cross-family 404, no audit row — acknowledgement is not an auth action) per API_SPEC §5.8.
 TEST PLAN: SAFETY.md §10 eval cases must all pass (100%); every safety bug becomes a permanent test.
-ACCEPTANCE CRITERIA: safety must-pass cases pass in both languages.
+TEST RESULT (2026-10-09): `pnpm ai:eval` 51/51 (safety 33/33 across en 17 + zh-Hant 16, must-pass 45/45), eval set green inside `pnpm test`; `backend/test/safety_events.test.ts` (10: derivation, no-raw-text column assertion, retry idempotency, high class kept, invalid enums rejected, cross-family 404, sort order, review flow + gates); app tests for flag passthrough (3) and `recordSafetyFlag` (2). `pnpm check` green (306 tests).
+ACCEPTANCE CRITERIA: safety must-pass cases pass in both languages — **met** (27/27 must-pass in en and zh-Hant).
 DEPENDENCIES: P1-07.
 
 ## P1-12 — Data export and delete — **TODO**

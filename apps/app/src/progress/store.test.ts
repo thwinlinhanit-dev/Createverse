@@ -383,3 +383,39 @@ describe("sync outbox (server arrives with P1-08)", () => {  it("clears confirme
     expect(store.pendingEvents()).toHaveLength(1);
   });
 });
+
+describe("safety flags (P1-11)", () => {
+  it("records one enum-only ai.safety.flagged event for sync derivation", async () => {
+    const store = await openStore();
+    const event = await store.recordSafetyFlag({
+      kind: "input_blocked",
+      severity: "warn",
+      actionTaken: "safe_alternative",
+      stepId: "step.bridge.j1",
+    });
+    expect(event.type).toBe("ai.safety.flagged");
+    expect(event.payload).toEqual({
+      kind: "input_blocked",
+      severity: "warn",
+      source: "ai_mentor",
+      action_taken: "safe_alternative",
+      step_id: "step.bridge.j1",
+    });
+    // Queued for sync like every other event (outbox, P1-08).
+    expect(store.summary().totalEvents).toBe(1);
+  });
+
+  it("never accepts free text alongside the flag", async () => {
+    const store = await openStore();
+    const event = await store.recordSafetyFlag({
+      kind: "privacy",
+      severity: "warn",
+      actionTaken: "private_info_message",
+    });
+    // Payload keys are a closed set — nothing free-text-shaped can ride along.
+    expect(Object.keys(event.payload).sort()).toEqual(
+      ["action_taken", "kind", "severity", "source"].sort(),
+    );
+    expect(JSON.stringify(event.payload)).not.toContain("my name");
+  });
+});

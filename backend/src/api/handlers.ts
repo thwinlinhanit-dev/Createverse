@@ -33,6 +33,7 @@ import {
   families,
   portfolioEntries,
   progressEvents,
+  safetyEvents,
   users,
 } from "../db/schema.ts";
 import { ids, newToken } from "../modules/identity/ids.ts";
@@ -728,6 +729,16 @@ const SYNC_EVENT_TYPES = new Set([
   "parent.settings.changed",
 ]);
 
+/** P1-11: safety_events enums (DATA_MODEL §2). Anything else is not derived. */
+const SAFETY_EVENT_KINDS: ReadonlySet<string> = new Set([
+  "input_blocked",
+  "output_blocked",
+  "risky_experiment",
+  "privacy",
+  "other",
+]);
+const SAFETY_EVENT_SEVERITIES: ReadonlySet<string> = new Set(["info", "warn", "high"]);
+
 /** Accepts both the app's shared-types event shape and the API_SPEC §5.4 example. */
 const SyncEventShape = z.strictObject({
   event_id: z
@@ -808,6 +819,34 @@ export async function syncEvents(c: Context<AppEnv>): Promise<Response> {
       // Retries (same event_id) are acknowledged, never stored twice.
       if (Number(result.changes) === 0) duplicates.push(event.event_id);
       else accepted.push(event.event_id);
+
+      // P1-11 (DATA_MODEL §4): ai.safety.flagged derives a safety_events
+      // row — enum fields only, deterministic id `sev_<event_id>` so
+      // retries stay idempotent, never the message text (SAFETY §2).
+      if (event.type === "ai.safety.flagged") {
+        const kind = event.payload["kind"];
+        const severity = event.payload["severity"];
+        if (
+          typeof kind === "string" &&
+          SAFETY_EVENT_KINDS.has(kind) &&
+          typeof severity === "string" &&
+          SAFETY_EVENT_SEVERITIES.has(severity)
+        ) {
+          tx.insert(safetyEvents)
+            .values({
+              id: `sev_${event.event_id}`,
+              childId: child.id,
+              kind: kind as typeof safetyEvents.$inferInsert["kind"],
+              severity: severity as typeof safetyEvents.$inferInsert["severity"],
+              source: String(event.payload["source"] ?? "ai_mentor").slice(0, 80),
+              actionTaken: String(event.payload["action_taken"] ?? "unknown").slice(0, 80),
+              reviewedByParent: 0,
+              createdAt: event.occurred_at,
+            })
+            .onConflictDoNothing()
+            .run();
+        }
+      }
     }
     tx.update(devices).set({ lastSyncAt: now }).where(eq(devices.id, deviceId)).run();
   });
@@ -892,7 +931,8 @@ const ChildSettingsBody = z.strictObject({
   read_aloud_enabled: z.boolean().optional(),
   ai_mentor_enabled: z.boolean().optional(),
   project_approval_required: z.boolean().optional(),
-  allowed_risk_class: z.enum(["low", "medium", "high"]).optional(),
+  // "high" is blocked for children (DATA_MODEL §121) — a parent cannot allow it either.
+  allowed_risk_class: z.enum(["low", "medium"]).optional(),
 });
 
 function overviewContent(c: Context<AppEnv>): {
@@ -1423,4 +1463,58 @@ export async function getArtifactFile(c: Context<AppEnv>): Promise<Response> {
   c.header("Content-Type", artifact.mime);
   c.header("Content-Disposition", `attachment; filename="${artifact.storageKey}"`);
   return c.body(new Uint8Array(bytes));
+}
+
+/* -------------------------------------------------- P1-11 safety endpoints
+ * API_SPEC §5.8: the parent sees safety events sorted by severity — the
+ * rows derived from `ai.safety.flagged` sync events (SAFETY.md §2: every
+ * blocked or redirected exchange creates a row; enum fields only, never
+ * message text). Reviewing is a parent acknowledgement; it is not an
+ * auth/security action, so it writes no audit row (§7 list).
+ */
+
+const SAFETY_SEVERITY_RANK: Readonly<Record<string, number>> = { high: 0, warn: 1, info: 2 };
+
+export async function listSafetyEvents(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const child = findChild(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId); // cross-family reads answer 404 (§6 rule 1)
+
+  const rows = db.select().from(safetyEvents).where(eq(safetyEvents.childId, child.id)).all();
+  const sorted = [...rows].sort((a, b) => {
+    const rank = (SAFETY_SEVERITY_RANK[a.severity] ?? 3) - (SAFETY_SEVERITY_RANK[b.severity] ?? 3);
+    if (rank !== 0) return rank;
+    if (a.createdAt !== b.createdAt) return a.createdAt < b.createdAt ? 1 : -1; // newest first
+    return a.id < b.id ? -1 : 1; // ids are time-sortable; deterministic tie-break
+  });
+  return c.json({
+    child_id: child.id,
+    events: sorted.map((row) => ({
+      id: row.id,
+      kind: row.kind,
+      severity: row.severity,
+      source: row.source,
+      action_taken: row.actionTaken,
+      reviewed: row.reviewedByParent === 1,
+      created_at: row.createdAt,
+    })),
+  });
+}
+
+export async function reviewSafetyEvent(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const rows = db
+    .select()
+    .from(safetyEvents)
+    .where(eq(safetyEvents.id, pathParam(c, "eventId")))
+    .all();
+  const row = rows[0];
+  if (!row) throw new ApiError("not_found");
+  const child = findChild(db, row.childId ?? ""); // childId is nullable in the §2 DDL
+  assertFamily(session, child.familyId); // cross-family review answers 404
+
+  db.update(safetyEvents).set({ reviewedByParent: 1 }).where(eq(safetyEvents.id, row.id)).run();
+  return c.json({ id: row.id, reviewed: true });
 }

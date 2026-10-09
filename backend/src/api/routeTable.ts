@@ -70,6 +70,8 @@ export const ROUTES: RouteDef[] = [
   // API_SPEC §5.10 — export (P1-08: events queryable per child)
   { method: "GET", path: "/children/:childId/export/events", role: "parent+fresh", limit: "session", note: "Paged events for one child" },
   { method: "GET", path: "/children/:childId/overview", role: "parent", limit: "session", note: "Learning-first overview (API_SPEC §5.8)" },
+  { method: "GET", path: "/children/:childId/safety-events", role: "parent", limit: "session", note: "Plain-language safety events sorted by severity (API_SPEC §5.8)" },
+  { method: "POST", path: "/safety-events/:eventId/review", role: "parent", limit: "session", note: "Mark a safety event as reviewed (API_SPEC §5.8)" },
 
   // API_SPEC §5.11 — health
   { method: "GET", path: "/health", role: "public", limit: "none", note: "Liveness" },

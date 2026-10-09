@@ -384,6 +384,17 @@ export default function StepRunnerPage() {
                   ? bundle.ladders.find((l) => l.id === target.hint_ladder)
                   : undefined;
               },
+              // P1-11 (SAFETY.md §2): each blocked or redirected exchange
+              // writes one flagged event → server derives the safety_events
+              // row for the parent view. Enums only, never the text.
+              onSafetyEvent: (flag) => {
+                void activeStore.recordSafetyFlag({
+                  kind: flag.kind,
+                  severity: flag.severity,
+                  actionTaken: flag.actionTaken,
+                  stepId: activeStep.id,
+                });
+              },
             });
             void mentor
               .getHelp({

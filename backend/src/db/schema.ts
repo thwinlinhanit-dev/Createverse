@@ -284,3 +284,28 @@ export const portfolioEntries = sqliteTable(
     uniqueIndex("portfolio_artifact_unique").on(t.artifactId),
   ],
 );
+
+/**
+ * P1-11 safety events — DATA_MODEL §2/§4: every blocked or redirected
+ * exchange writes a row (SAFETY.md §2), derived server-side from
+ * `ai.safety.flagged` sync events (events are the source of truth).
+ * Deterministic id `sev_<event_id>` keeps retries idempotent; only enum
+ * fields are stored — never message text (SAFETY.md §2, no raw personal
+ * data). `child_id` nullable per §2.7 DDL (Phase 1 always has one).
+ */
+export const safetyEvents = sqliteTable(
+  "safety_events",
+  {
+    id: text("id").primaryKey(),
+    childId: text("child_id").references(() => children.id),
+    kind: text("kind", {
+      enum: ["input_blocked", "output_blocked", "risky_experiment", "privacy", "other"],
+    }).notNull(),
+    severity: text("severity", { enum: ["info", "warn", "high"] }).notNull(),
+    source: text("source").notNull(),
+    actionTaken: text("action_taken").notNull(),
+    reviewedByParent: integer("reviewed_by_parent").notNull().default(0),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [index("idx_safety_child").on(t.childId, t.createdAt)],
+);

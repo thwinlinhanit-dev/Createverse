@@ -7,9 +7,12 @@ import type {
   HintSource,
   InputVerdict,
   OutputVerdict,
+  SafetyEventReporter,
+  SafetyFlag,
   SafetyLayer,
   SafetyStatus,
 } from "./types.ts";
+import { distressSeverity } from "./ruleBasedSafety.ts";
 
 /**
  * MentorService — AI_SPEC.md §3:
@@ -21,6 +24,11 @@ import type {
  * SAFETY.md §7 / decision 2: Junior has no live AI chat.
  * Errors, timeouts and uncertainty always fall back — never blocking the learning flow
  * (AI_SPEC.md §13). The child is never shown an error.
+ *
+ * P1-11 (SAFETY.md §2 order): input safety runs **before** the budget guard
+ * and before any provider — the rule-based classifier is free, so a blocked
+ * message never costs live AI tokens, and Phase 1 (no provider at all)
+ * still screens and flags every exchange.
  */
 
 export interface MentorSettings {
@@ -40,6 +48,12 @@ export interface MentorOptions {
   /** Response cache (AI_SPEC.md §3). Optional; without it, every live call hits the provider. */
   readonly cache?: ResponseCache;
   readonly settings?: MentorSettings;
+  /**
+   * P1-11: called once for every blocked or redirected exchange so the app
+   * can write the `ai.safety.flagged` event (→ server `safety_events` row,
+   * SAFETY.md §2 "every blocked or redirected exchange creates a row").
+   */
+  readonly onSafetyEvent?: SafetyEventReporter;
 }
 
 export const DEFAULT_LIVE_ESTIMATE_TOKENS = 500;
@@ -113,6 +127,53 @@ function mapOutputVerdict(verdict: OutputVerdict): SafetyStatus {
   return verdict === "unsafe" || verdict === "leaks_answer" ? "blocked" : "redirected";
 }
 
+/**
+ * P1-11: map an input verdict to the DATA_MODEL `safety_events` fields.
+ * Enum-only — never the message text (SAFETY.md §2 "no raw personal data").
+ * `kind`/`severity`/`action_taken` match the §2 table columns; `source`
+ * ("ai_mentor") is added by the app when it writes the flagged event.
+ */
+export function inputFlagFor(
+  verdict: InputVerdict,
+  childId: string,
+  message?: string,
+): SafetyFlag | null {
+  switch (verdict) {
+    case "ok":
+      return null;
+    case "block":
+      return { childId, kind: "input_blocked", severity: "warn", actionTaken: "safe_alternative" };
+    case "personal_info":
+      return { childId, kind: "privacy", severity: "warn", actionTaken: "private_info_message" };
+    case "secrets":
+      return { childId, kind: "other", severity: "warn", actionTaken: "refused_secrets" };
+    case "redirect":
+      return { childId, kind: "other", severity: "info", actionTaken: "redirected_to_project" };
+    case "distress":
+      // §10.8 (someone is hurting them) escalates to high via the rules.
+      return {
+        childId,
+        kind: "other",
+        severity: distressSeverity(message ?? ""),
+        actionTaken: "distress_flow",
+      };
+  }
+}
+
+/** P1-11: map an output verdict to `safety_events` fields (enum-only). */
+export function outputFlagFor(verdict: OutputVerdict, childId: string): SafetyFlag | null {
+  switch (verdict) {
+    case "ok":
+      return null;
+    case "unsafe":
+    case "leaks_answer":
+      return { childId, kind: "output_blocked", severity: "warn", actionTaken: "precomputed_hint" };
+    case "off_topic":
+    case "too_hard":
+      return { childId, kind: "other", severity: "info", actionTaken: "redirected_output" };
+  }
+}
+
 function systemPromptFor(ctx: HelpContext): string {
   return [
     "You are a learning mentor for a child. Guide thinking; never do the child's work.",
@@ -130,6 +191,7 @@ export class MentorService {
   private readonly budget?: BudgetGuard;
   private readonly cache?: ResponseCache;
   private readonly settings: MentorSettings;
+  private readonly onSafetyEvent?: SafetyEventReporter;
 
   constructor(options: MentorOptions) {
     this.hints = options.hints;
@@ -138,48 +200,59 @@ export class MentorService {
     this.budget = options.budget;
     this.cache = options.cache;
     this.settings = options.settings ?? {};
+    this.onSafetyEvent = options.onSafetyEvent;
   }
 
   async getHelp(ctx: HelpContext): Promise<HelpResult> {
-    if (ctx.message !== undefined && this.canGoLive(ctx)) {
+    if (ctx.message !== undefined) {
+      // SAFETY.md §2 stage 1+2 run first: free, rule-based, always — even
+      // with no provider configured (Phase 1) and before the budget guard.
       const verdict = await this.safety.checkInput(ctx.message, ctx);
       if (verdict !== "ok") {
         const mapped = mapInputVerdict(verdict);
+        this.report(inputFlagFor(verdict, ctx.childId, ctx.message));
         return { source: "fallback", safety: mapped.safety, textKey: mapped.textKey };
       }
 
-      try {
-        const cacheKey = responseCacheKey(ctx);
-        const cached = this.cache?.get(cacheKey);
-        if (cached) {
-          // Cache hit: no provider call and no tokens against the budget.
-          return { source: "cache", safety: "ok", text: cached.text };
+      if (this.canGoLive(ctx)) {
+        try {
+          const cacheKey = responseCacheKey(ctx);
+          const cached = this.cache?.get(cacheKey);
+          if (cached) {
+            // Cache hit: no provider call and no tokens against the budget.
+            return { source: "cache", safety: "ok", text: cached.text };
+          }
+
+          const response = await this.provider!.complete({
+            systemPrompt: systemPromptFor(ctx),
+            userText: ctx.message,
+            stage: ctx.stage,
+            locale: ctx.locale,
+            maxTokens: this.settings.maxLiveTokens ?? DEFAULT_LIVE_ESTIMATE_TOKENS,
+          });
+
+          const outputVerdict = await this.safety.checkOutput(response.text, ctx);
+          if (outputVerdict !== "ok") {
+            // Discard the output, serve the next pre-written hint (AI_SPEC §13).
+            this.report(outputFlagFor(outputVerdict, ctx.childId));
+            return this.hintOrFallback(ctx, mapOutputVerdict(outputVerdict));
+          }
+
+          this.budget?.record(response.usage, { childId: ctx.childId });
+          this.cache?.set(cacheKey, response);
+          return { source: "live", safety: "ok", text: response.text };
+        } catch {
+          // Provider error or timeout: next pre-written hint, silently (AI_SPEC §13).
+          return this.hintOrFallback(ctx, "ok");
         }
-
-        const response = await this.provider!.complete({
-          systemPrompt: systemPromptFor(ctx),
-          userText: ctx.message,
-          stage: ctx.stage,
-          locale: ctx.locale,
-          maxTokens: this.settings.maxLiveTokens ?? DEFAULT_LIVE_ESTIMATE_TOKENS,
-        });
-
-        const outputVerdict = await this.safety.checkOutput(response.text, ctx);
-        if (outputVerdict !== "ok") {
-          // Discard the output, serve the next pre-written hint (AI_SPEC.md §13).
-          return this.hintOrFallback(ctx, mapOutputVerdict(outputVerdict));
-        }
-
-        this.budget?.record(response.usage, { childId: ctx.childId });
-        this.cache?.set(cacheKey, response);
-        return { source: "live", safety: "ok", text: response.text };
-      } catch {
-        // Provider error or timeout: next pre-written hint, silently (AI_SPEC.md §13).
-        return this.hintOrFallback(ctx, "ok");
       }
     }
 
     return this.hintOrFallback(ctx, "ok");
+  }
+
+  private report(flag: SafetyFlag | null): void {
+    if (flag) this.onSafetyEvent?.(flag);
   }
 
   private canGoLive(ctx: HelpContext): boolean {

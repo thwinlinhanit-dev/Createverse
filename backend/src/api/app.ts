@@ -65,6 +65,8 @@ const HANDLERS: Record<string, (c: Parameters<typeof handlers.health>[0]) => Pro
   "DELETE /portfolio/:entryId": handlers.deletePortfolioEntry,
   "DELETE /artifacts/:artifactId": handlers.deleteArtifact,
   "GET /artifacts/:artifactId/file": handlers.getArtifactFile,
+  "GET /children/:childId/safety-events": handlers.listSafetyEvents,
+  "POST /safety-events/:eventId/review": handlers.reviewSafetyEvent,
   "GET /health": handlers.health,
 };
 

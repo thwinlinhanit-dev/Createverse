@@ -102,3 +102,25 @@ export interface SafetyLayer {
   checkInput(text: string, ctx: HelpContext): MaybePromise<InputVerdict>;
   checkOutput(text: string, ctx: HelpContext): MaybePromise<OutputVerdict>;
 }
+
+/** P1-11 — safety_events row fields (DATA_MODEL §2). Enum-only: never free text. */
+export type SafetyEventKind =
+  | "input_blocked"
+  | "output_blocked"
+  | "risky_experiment"
+  | "privacy"
+  | "other";
+
+export type SafetySeverity = "info" | "warn" | "high";
+
+export interface SafetyFlag {
+  /** Scope for the derived safety_events row (internal only — never sent to a provider). */
+  readonly childId: string;
+  readonly kind: SafetyEventKind;
+  readonly severity: SafetySeverity;
+  /** What the mentor did about it — an enum, never the message text (SAFETY §2). */
+  readonly actionTaken: string;
+}
+
+/** SAFETY.md §2: every blocked or redirected exchange reports exactly one flag. */
+export type SafetyEventReporter = (flag: SafetyFlag) => void;

@@ -23,6 +23,7 @@ import {
   type BudgetGuard,
   type HelpContext,
   type ResponseCache,
+  type SafetyEventReporter,
 } from "@createverse/ai-core";
 import { getNextHint } from "@createverse/learning-core";
 import type { HintLadder, Stage } from "@createverse/shared-types";
@@ -45,6 +46,11 @@ export interface CreateMentorOptions {
   readonly budget?: BudgetGuard;
   /** Test-only: production shares the module response cache below. */
   readonly cache?: ResponseCache;
+  /**
+   * P1-11 (SAFETY.md §2): called once per blocked or redirected exchange so
+   * the caller can write the `ai.safety.flagged` event — enum fields only.
+   */
+  readonly onSafetyEvent?: SafetyEventReporter;
 }
 
 /**
@@ -80,6 +86,7 @@ export function createMentor(options: CreateMentorOptions): MentorService {
     ...(options.provider ? { provider: options.provider } : {}),
     budget: options.budget ?? sharedBudget,
     cache: options.cache ?? sharedCache,
+    ...(options.onSafetyEvent ? { onSafetyEvent: options.onSafetyEvent } : {}),
     settings: {
       liveAiEnabled: liveAiAllowsStage(choice, options.stage),
       killSwitch: isKillSwitchOn(storage),

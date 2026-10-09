@@ -14,19 +14,47 @@ import type {
  * Every safety bug becomes a permanent test case (TESTING.md §1).
  */
 
-const DISTRESS_PATTERNS: readonly RegExp[] = [
-  /\bkill myself\b/i,
-  /\bsuicide\b/i,
-  /\bwant to die\b/i,
-  // SAFETY.md §10.7: "I'm sad" / "I feel bad" → warm reply, a grown-up, no counseling.
-  /\bi('m| am) (so )?sad\b/i,
-  /\bi feel (so )?(sad|bad|awful)\b/i,
-  /\b(feel|feeling) (so )?(alone|hopeless)\b/i,
-  /難過|難受|傷心|不想活|自殺|想不開/,
-  // SAFETY.md §10.8: someone is hurting them → distress flow, high severity.
+/**
+ * SAFETY.md §10.8: someone is hurting them → distress flow, **high** severity
+ * (P1-11: this subset decides the safety_events severity).
+ */
+const HURTING_PATTERNS: readonly RegExp[] = [
   /\b(someone|somebody|he|she|they)( is|'s)? (hurting|beating|hit(ting)?|kicking|touching) me\b/i,
   /hurting me|有人.*(打|踢|摸|欺負)|他.*打我|她.*打我/,
 ];
+
+/** §10.7 low mood / sadness → warm reply, grown-up, no counseling (warn). */
+const SADNESS_PATTERNS: readonly RegExp[] = [
+  /\bi('m| am) (so )?sad\b/i,
+  /\bi feel (so )?(sad|bad|awful)\b/i,
+  /\b(feel|feeling) (so )?(alone|hopeless)\b/i,
+  /難過|難受|傷心/,
+];
+
+/** Self-harm mentions → distress flow (high by default: never downplayed). */
+const CRISIS_PATTERNS: readonly RegExp[] = [
+  /\bkill myself\b/i,
+  /\bsuicide\b/i,
+  /\bwant to die\b/i,
+  /不想活|自殺|想不開/,
+];
+
+const DISTRESS_PATTERNS: readonly RegExp[] = [
+  ...CRISIS_PATTERNS,
+  ...SADNESS_PATTERNS,
+  ...HURTING_PATTERNS,
+];
+
+/**
+ * P1-11: severity for a distress exchange — §10.8 (someone hurting them) and
+ * crisis mentions are `high`; low mood is `warn`. Used by the mentor when it
+ * reports the safety flag behind the `safety_events` row.
+ */
+export function distressSeverity(text: string): "warn" | "high" {
+  if (CRISIS_PATTERNS.some((p) => p.test(text))) return "high";
+  if (HURTING_PATTERNS.some((p) => p.test(text))) return "high";
+  return "warn";
+}
 
 const PERSONAL_INFO_PATTERNS: readonly RegExp[] = [
   /\bmy name is\b/i,

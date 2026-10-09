@@ -536,6 +536,31 @@ export class ProgressStore {
   }
 
   /**
+   * P1-11 (SAFETY.md §2): every blocked or redirected mentor exchange writes
+   * one `ai.safety.flagged` event — enum fields only, never the message text
+   * (DATA_MODEL §6). The server derives a `safety_events` row from it (§4).
+   */
+  async recordSafetyFlag(flag: {
+    readonly kind: string;
+    readonly severity: string;
+    readonly actionTaken: string;
+    readonly stepId?: string;
+  }): Promise<ProgressEvent> {
+    this.ensureLoaded();
+    return this.appendEvent(
+      "ai.safety.flagged",
+      {
+        kind: flag.kind,
+        severity: flag.severity,
+        source: "ai_mentor",
+        action_taken: flag.actionTaken,
+        ...(flag.stepId ? { step_id: flag.stepId } : {}),
+      },
+      null,
+    );
+  }
+
+  /**
    * Persist a build-mode lab design so a reload resumes the design, not an
    * empty build area (P1-05 pause/resume). Restored only when the spec id
    * and version still match — content edits never resurrect a stale design.
