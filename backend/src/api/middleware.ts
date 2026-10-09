@@ -28,6 +28,8 @@ export interface AppVars {
   webauthn: WebAuthnConfig;
   /** Content inputs for the parent overview (API_SPEC §5.8); injected once per app. */
   overviewContent: OverviewContent | null;
+  /** Directory for artifact files (P1-09 FileStore; server-generated keys only). */
+  artifactDir: string;
 }
 
 export interface AppEnv {
@@ -223,20 +225,22 @@ export function securityHeaders(): (c: Context<AppEnv>, next: Next) => Promise<v
   };
 }
 
-/** Reads and parses a JSON body, enforcing the 64 KB cap (API_SPEC §4). */
+/** Reads and parses a JSON body, enforcing the 64 KB cap by default (API_SPEC §4). */
 export async function readJsonBody<T>(
   c: Context<AppEnv>,
   parse: (data: unknown) => T,
+  /** Per-route override (API_SPEC §4: the artifact upload route gets a larger cap). */
+  maxBytes = 64 * 1024,
 ): Promise<T> {
   const contentLength = Number(c.req.header("content-length") ?? "0");
-  if (contentLength > 64 * 1024) throw new ApiError("too_large");
+  if (contentLength > maxBytes) throw new ApiError("too_large");
   let data: unknown;
   try {
     data = await c.req.json();
   } catch {
     throw new ApiError("invalid_request");
   }
-  if (JSON.stringify(data).length > 64 * 1024) throw new ApiError("too_large");
+  if (JSON.stringify(data).length > maxBytes) throw new ApiError("too_large");
   return parse(data);
 }
 

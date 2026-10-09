@@ -16,6 +16,8 @@ export interface AppOptions {
   webauthn: WebAuthnConfig;
   /** Content inputs for the parent overview (compiled bundle; fixtures in tests). */
   overviewContent?: OverviewContent;
+  /** Artifact file directory (P1-09); defaults to `var/artifacts`. */
+  artifactDir?: string;
   /** Injectable clock for tests. */
   now?: () => Date;
   /** Rate-limit overrides (API_SPEC §4 defaults shown in LIMITS). */
@@ -55,6 +57,14 @@ const HANDLERS: Record<string, (c: Parameters<typeof handlers.health>[0]) => Pro
   "GET /children/:childId/export/events": handlers.exportChildEvents,
   "GET /children/:childId/overview": handlers.getChildOverview,
   "PATCH /children/:childId/settings": handlers.patchChildSettings,
+  "POST /artifacts": handlers.createArtifact,
+  "POST /portfolio": handlers.createPortfolioEntry,
+  "GET /children/:childId/portfolio": handlers.listPortfolio,
+  "GET /portfolio/:entryId": handlers.getPortfolioEntry,
+  "PATCH /portfolio/:entryId": handlers.patchPortfolioEntry,
+  "DELETE /portfolio/:entryId": handlers.deletePortfolioEntry,
+  "DELETE /artifacts/:artifactId": handlers.deleteArtifact,
+  "GET /artifacts/:artifactId/file": handlers.getArtifactFile,
   "GET /health": handlers.health,
 };
 
@@ -73,6 +83,7 @@ export function createApp(options: AppOptions): Hono<AppEnv> {
     c.set("now", (options.now?.() ?? new Date()).toISOString());
     c.set("webauthn", options.webauthn);
     c.set("overviewContent", options.overviewContent ?? null);
+    c.set("artifactDir", options.artifactDir ?? "var/artifacts");
     await next();
   });
   app.use("*", securityHeaders());

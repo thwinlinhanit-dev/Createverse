@@ -231,3 +231,56 @@ export const progressEvents = sqliteTable(
     index("idx_events_type").on(t.childId, t.type),
   ],
 );
+
+/**
+ * P1-09 portfolio (DATA_MODEL §2.7 "Creations"). `project_instance_id`
+ * stays nullable without an FK: `project_instances` is owned by a later
+ * task and does not exist yet (deviation noted in DATA_MODEL.md).
+ * `portfolio_entries.artifact_id` enforces invariant 4 — every entry
+ * points at an existing artifact (unique: one entry per artifact, so
+ * deleting an entry can delete its artifact without orphaning others).
+ */
+export const artifacts = sqliteTable(
+  "artifacts",
+  {
+    id: text("id").primaryKey(),
+    childId: text("child_id")
+      .notNull()
+      .references(() => children.id),
+    projectInstanceId: text("project_instance_id"),
+    kind: text("kind", {
+      enum: ["drawing", "song", "code", "experiment_result", "design", "report", "game", "model"],
+    }).notNull(),
+    mime: text("mime").notNull(),
+    storageKey: text("storage_key").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    meta: text("meta", { mode: "json" }),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [index("idx_artifacts_child").on(t.childId)],
+);
+
+export const portfolioEntries = sqliteTable(
+  "portfolio_entries",
+  {
+    id: text("id").primaryKey(),
+    childId: text("child_id")
+      .notNull()
+      .references(() => children.id),
+    artifactId: text("artifact_id")
+      .notNull()
+      .references(() => artifacts.id),
+    projectInstanceId: text("project_instance_id"),
+    title: text("title").notNull(),
+    stageAtCreation: text("stage_at_creation").notNull(),
+    skills: text("skills", { mode: "json" }).notNull(),
+    concepts: text("concepts", { mode: "json" }).notNull(),
+    whatILearned: text("what_i_learned"),
+    whatIWouldImprove: text("what_i_would_improve"),
+    createdAt: text("created_at").notNull(),
+  },
+  (t) => [
+    index("idx_portfolio_child").on(t.childId),
+    uniqueIndex("portfolio_artifact_unique").on(t.artifactId),
+  ],
+);

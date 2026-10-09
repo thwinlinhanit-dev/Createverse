@@ -352,6 +352,7 @@ CREATE TABLE audit_log (
 - **`children.pin_failed_attempts` / `children.pin_locked_until`** (new columns) — PIN lockout: 5 failed attempts lock the profile for 15 minutes (SECURITY §4).
 - **Indexes are non-unique** on `family_id` (devices/children/sessions) and `user_id` (passkeys): a family has many devices/children/sessions and a parent may hold several passkeys. Only `users.email` is UNIQUE per §3.
 - Tables §3 defines beyond identity (`progress_events`, `project_instances`, …) are created by their owning tasks (P1-05/P1-08+), not by P1-01.
+- **`artifacts.project_instance_id` / `portfolio_entries.project_instance_id`** (P1-09, 2026-10-09) — kept nullable **without** the §2.7 foreign key: `project_instances` does not exist until its owning task, and a dangling FK would break the migration. The FK is added when that table lands. `portfolio_entries.artifact_id` keeps its FK plus a unique index (one entry per artifact) so deletes can never orphan an entry.
 
 ---
 

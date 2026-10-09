@@ -54,6 +54,16 @@ export const ROUTES: RouteDef[] = [
   { method: "PATCH", path: "/children/:childId/pin", role: "parent+fresh", limit: "session", note: "Set or clear PIN" },
   { method: "POST", path: "/children/:childId/open", role: "device", limit: "auth", note: "Open child profile on device" },
 
+  // API_SPEC §5.7 — portfolio and artifacts (P1-09)
+  { method: "POST", path: "/artifacts", role: "child", limit: "session", note: "Upload artifact (allowlist + 2 MB, API_SPEC §4)" },
+  { method: "POST", path: "/portfolio", role: "child", limit: "session", note: "Entry from an artifact + reflection (invariant 4)" },
+  { method: "GET", path: "/children/:childId/portfolio", role: "any-session", limit: "session", note: "List entries (parent, child own)" },
+  { method: "GET", path: "/portfolio/:entryId", role: "any-session", limit: "session", note: "Entry detail with artifact link" },
+  { method: "PATCH", path: "/portfolio/:entryId", role: "any-session", limit: "session", note: "Edit title/reflection (parent, child own)" },
+  { method: "DELETE", path: "/portfolio/:entryId", role: "parent", limit: "session", note: "Deletes entry and its artifact file" },
+  { method: "DELETE", path: "/artifacts/:artifactId", role: "parent", limit: "session", note: "Delete an artifact individually (P1-09 requirement)" },
+  { method: "GET", path: "/artifacts/:artifactId/file", role: "any-session", limit: "session", note: "Serve the file with a safe content type (SECURITY T10)" },
+
   // API_SPEC §5.4 — sync (P1-08)
   { method: "POST", path: "/sync/events", role: "device", limit: "device", note: "Batch of events. Idempotent by event_id" },
 

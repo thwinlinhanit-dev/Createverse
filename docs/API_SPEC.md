@@ -223,6 +223,7 @@ Notes:
 | `GET /portfolio/:entryId` | parent, child (own) | Entry detail with artifact link |
 | `PATCH /portfolio/:entryId` | child (own), parent | Edit reflection text, title |
 | `DELETE /portfolio/:entryId` | parent | Deletes entry and its artifact file |
+| `DELETE /artifacts/:artifactId` | parent | Deletes one artifact individually (and the entries referencing it, keeping invariant 4) |
 | `GET /artifacts/:artifactId/file` | parent, child (own) | Serves the file with a safe content type |
 
 ### 5.8 Parent overview and safety

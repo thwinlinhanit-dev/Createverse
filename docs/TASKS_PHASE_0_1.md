@@ -171,13 +171,14 @@ TEST PLAN: duplicate push deduped; events queryable per child; cross-child query
 ACCEPTANCE CRITERIA: events queryable per child ✓; retries never duplicate rows ✓ (asserted directly).
 DEPENDENCIES: P1-05.
 
-## P1-09 — Portfolio — **TODO**
+## P1-09 — Portfolio — **DONE (2026-10-09)**
 
 GOAL: Create and view portfolio entries with reflection fields (DATA_MODEL §2.7, PRODUCT_SPEC §3).
 REQUIREMENTS: artifact upload with type allowlist and size limit (API_SPEC §4); every entry points to an existing artifact (DATA_MODEL invariant 4); parent can delete artifacts individually.
 TEST PLAN: upload allowlist and size-limit tests; entry→artifact referential test.
 ACCEPTANCE CRITERIA: a completed project produces an entry visible to child and parent.
 DEPENDENCIES: P1-05.
+DONE (2026-10-09): DATA_MODEL §2.7 `artifacts` + `portfolio_entries` tables (migration `0002_p1_09_portfolio.sql`; unique one-entry-per-artifact index keeps invariant 4 under deletes; `project_instance_id` stays nullable without FK — its owning table does not exist yet). Local FileStore module `backend/src/modules/artifacts/fileStore.ts`: mime allowlist per SECURITY §6, 2 MB cap, strict base64 round-trip, SVG rejected-not-patched when it contains scripts/handlers/`javascript:`, path-safe server-generated keys, served `attachment` + `nosniff` (T10). All seven API_SPEC §5.7 routes plus `DELETE /artifacts/:artifactId` (added to §5.7): child upload/entry, parent+own-child list/detail/patch, parent-only deletes; the upload route alone gets a 3 MB body cap (base64 overhead over the 64 KB JSON cap). Audit rows `portfolio.delete` / `artifact.delete` (ids only). Tests: `backend/test/portfolio.test.ts` (18: allowlist 422 / 413 / 400, SVG safe+unsafe, acceptance visibility to child and parent, unknown+foreign artifact 404, duplicate 409, sibling/cross-family 404, strict patches, cascade deletes, missing-file ops path). Remaining: the app does not upload to the server yet (needs the auth client / login UI); R2 store stays pending owner approval (local-first FileStore shipped as the deferred default).
 
 ## P1-10 — Parent overview — **DONE (2026-10-09)**
 

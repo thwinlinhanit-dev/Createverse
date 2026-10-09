@@ -37,6 +37,8 @@ export const ids = {
   request: () => newId("r"),
   challenge: () => newId("ch"),
   setupSecret: () => newId("sk"),
+  artifact: () => newId("art"),
+  portfolio: () => newId("pe"),
 };
 
 /** Opaque 256-bit token (session / device credential). Raw value shown once. */

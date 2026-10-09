@@ -1,6 +1,17 @@
 import { z } from "zod";
 import { replayEvidence } from "@createverse/learning-core";
-import { and, asc, eq, sql } from "drizzle-orm";
+import {
+  ARTIFACT_BODY_LIMIT,
+  MAX_ARTIFACT_BYTES,
+  decodeArtifactBase64,
+  deleteArtifactFile,
+  extForMime,
+  isAllowlistedMime,
+  readArtifactFile,
+  saveArtifactFile,
+  svgIsSafe,
+} from "../modules/artifacts/fileStore.ts";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "./middleware.ts";
 import {
@@ -15,14 +26,17 @@ import {
 import { ApiError } from "./errors.ts";
 import type { Db } from "../db/index.ts";
 import {
+  artifacts,
   childSettings,
   children,
   devices,
   families,
+  portfolioEntries,
   progressEvents,
   users,
 } from "../db/schema.ts";
 import { ids, newToken } from "../modules/identity/ids.ts";
+import type { SessionContext } from "../modules/identity/sessions.ts";
 import { writeAudit } from "../modules/identity/audit.ts";
 import {
   createSession,
@@ -1082,4 +1096,331 @@ export async function patchChildSettings(c: Context<AppEnv>): Promise<Response> 
       allowed_risk_class: row.allowedRiskClass,
     },
   });
+}
+
+/* ------------------------------------------------- P1-09 portfolio endpoints
+ * API_SPEC §5.7. Roles: uploads and entry creation come from the child
+ * session; lists/details/edits accept parent OR the owning child
+ * ("child (own)" — API_SPEC §6 rule 2); deletes are parent-only.
+ *
+ * Audit decision (API_SPEC §7): creating/reading content carries no
+ * security meaning and adds no audit rows; the two destructive parent
+ * operations do (portfolio.delete, artifact.delete below).
+ */
+
+const ARTIFACT_KINDS = [
+  "drawing",
+  "song",
+  "code",
+  "experiment_result",
+  "design",
+  "report",
+  "game",
+  "model",
+] as const;
+
+const ArtifactUploadBody = z.strictObject({
+  kind: z.enum(ARTIFACT_KINDS),
+  mime: z.string().min(1),
+  data_base64: z.string().min(1),
+});
+
+const PortfolioCreateBody = z.strictObject({
+  artifact_id: z.string().min(1),
+  title: z.string().min(1).max(80),
+  skills: z.array(z.string().min(1).max(60)).max(20).default([]),
+  concepts: z.array(z.string().min(1).max(60)).max(20).default([]),
+  what_i_learned: z.string().max(500).optional(),
+  what_i_would_improve: z.string().max(500).optional(),
+});
+
+const PortfolioPatchBody = z.strictObject({
+  title: z.string().min(1).max(80).optional(),
+  what_i_learned: z.string().max(500).nullable().optional(),
+  what_i_would_improve: z.string().max(500).nullable().optional(),
+});
+
+type ArtifactRow = typeof artifacts.$inferSelect;
+type EntryRow = typeof portfolioEntries.$inferSelect;
+
+/** The gate already proved a session exists; this narrows it for handlers. */
+function requireSession(c: Context<AppEnv>): SessionContext {
+  const session = c.get("session");
+  if (!session) throw new ApiError("unauthenticated");
+  return session;
+}
+
+/** Child role (gate-checked) plus its non-null profile id. */
+function requireChildId(c: Context<AppEnv>): string {
+  const session = c.get("session");
+  if (!session || session.kind !== "child" || !session.childId) throw new ApiError("forbidden");
+  return session.childId;
+}
+
+/**
+ * any-session ownership (API_SPEC §6 rules 1–2): a parent reaches the
+ * family's children (404 across families), a child session only its own
+ * profile — anything else answers 404 so existence never leaks.
+ */
+function accessibleChild(db: Db, session: SessionContext, childId: string) {
+  const child = findChild(db, childId);
+  if (session.kind === "parent") {
+    assertFamily(session, child.familyId);
+  } else if (session.childId !== child.id) {
+    throw new ApiError("not_found");
+  }
+  return child;
+}
+
+function findArtifact(db: Db, artifactId: string): ArtifactRow | null {
+  const rows = db.select().from(artifacts).where(eq(artifacts.id, artifactId)).all();
+  return rows[0] ?? null;
+}
+
+function findEntry(db: Db, entryId: string): EntryRow | null {
+  const rows = db.select().from(portfolioEntries).where(eq(portfolioEntries.id, entryId)).all();
+  return rows[0] ?? null;
+}
+
+function artifactJson(row: ArtifactRow) {
+  return {
+    id: row.id,
+    kind: row.kind,
+    mime: row.mime,
+    size_bytes: row.sizeBytes,
+    file_url: `/api/v1/artifacts/${row.id}/file`,
+  };
+}
+
+function entryJson(entry: EntryRow, artifact: ArtifactRow | null) {
+  return {
+    id: entry.id,
+    child_id: entry.childId,
+    artifact_id: entry.artifactId,
+    title: entry.title,
+    stage_at_creation: entry.stageAtCreation,
+    skills: entry.skills,
+    concepts: entry.concepts,
+    what_i_learned: entry.whatILearned,
+    what_i_would_improve: entry.whatIWouldImprove,
+    created_at: entry.createdAt,
+    artifact: artifact === null ? null : artifactJson(artifact),
+  };
+}
+
+/** POST /artifacts (child): allowlisted type, 2 MB cap, safe SVG (T10/§6). */
+export async function createArtifact(c: Context<AppEnv>): Promise<Response> {
+  const childId = requireChildId(c);
+  const body = zodParse(
+    ArtifactUploadBody.safeParse(await readJsonBody(c, (d) => d, ARTIFACT_BODY_LIMIT)),
+  );
+  if (!isAllowlistedMime(body.mime)) throw new ApiError("unprocessable");
+  const bytes = decodeArtifactBase64(body.data_base64);
+  if (bytes === null || bytes.length === 0) throw new ApiError("invalid_request");
+  if (bytes.length > MAX_ARTIFACT_BYTES) throw new ApiError("too_large");
+  if (body.mime === "image/svg+xml" && !svgIsSafe(bytes.toString("utf8"))) {
+    throw new ApiError("unprocessable");
+  }
+
+  const db = c.get("db");
+  const now = c.get("now");
+  const dir = c.get("artifactDir");
+  const id = ids.artifact();
+  const storageKey = `${id}.${extForMime(body.mime)}`;
+  saveArtifactFile(dir, storageKey, bytes);
+  try {
+    db.insert(artifacts)
+      .values({
+        id,
+        childId,
+        projectInstanceId: null,
+        kind: body.kind,
+        mime: body.mime,
+        storageKey,
+        sizeBytes: bytes.length,
+        meta: null,
+        createdAt: now,
+      })
+      .run();
+  } catch (err) {
+    deleteArtifactFile(dir, storageKey); // never leave an orphan file
+    throw err;
+  }
+  return c.json(
+    { id, kind: body.kind, mime: body.mime, size_bytes: bytes.length, created_at: now },
+    201,
+  );
+}
+
+/** POST /portfolio (child): entry from an owned artifact + reflection. */
+export async function createPortfolioEntry(c: Context<AppEnv>): Promise<Response> {
+  const childId = requireChildId(c);
+  const body = zodParse(PortfolioCreateBody.safeParse(await readJsonBody(c, (d) => d)));
+  const db = c.get("db");
+  const now = c.get("now");
+
+  // Invariant 4 (DATA_MODEL): the artifact must exist and belong to this
+  // child — a foreign or unknown id answers 404, no entry is written.
+  const artifact = findArtifact(db, body.artifact_id);
+  if (!artifact || artifact.childId !== childId) throw new ApiError("not_found");
+  const existing = db
+    .select()
+    .from(portfolioEntries)
+    .where(eq(portfolioEntries.artifactId, artifact.id))
+    .all();
+  if (existing.length > 0) throw new ApiError("conflict"); // one entry per artifact
+
+  const child = findChild(db, childId);
+  const id = ids.portfolio();
+  db.insert(portfolioEntries)
+    .values({
+      id,
+      childId,
+      artifactId: artifact.id,
+      projectInstanceId: null,
+      title: body.title,
+      stageAtCreation: child.stage, // server-side truth, never a client field
+      skills: body.skills,
+      concepts: body.concepts,
+      whatILearned: body.what_i_learned ?? null,
+      whatIWouldImprove: body.what_i_would_improve ?? null,
+      createdAt: now,
+    })
+    .run();
+
+  const created = findEntry(db, id);
+  if (!created) throw new ApiError("internal");
+  return c.json(entryJson(created, artifact), 201);
+}
+
+/** GET /children/:childId/portfolio (parent, child own): newest first. */
+export async function listPortfolio(c: Context<AppEnv>): Promise<Response> {
+  const session = requireSession(c);
+  const db = c.get("db");
+  const child = accessibleChild(db, session, pathParam(c, "childId"));
+  const rows = db
+    .select()
+    .from(portfolioEntries)
+    .leftJoin(artifacts, eq(portfolioEntries.artifactId, artifacts.id))
+    .where(eq(portfolioEntries.childId, child.id))
+    .orderBy(desc(portfolioEntries.createdAt))
+    .all();
+  return c.json({
+    child_id: child.id,
+    entries: rows.map((row) => entryJson(row.portfolio_entries, row.artifacts)),
+  });
+}
+
+/** GET /portfolio/:entryId (parent, child own): detail with artifact link. */
+export async function getPortfolioEntry(c: Context<AppEnv>): Promise<Response> {
+  const session = requireSession(c);
+  const db = c.get("db");
+  const entry = findEntry(db, pathParam(c, "entryId"));
+  if (!entry) throw new ApiError("not_found");
+  accessibleChild(db, session, entry.childId);
+  const artifact = findArtifact(db, entry.artifactId);
+  return c.json(entryJson(entry, artifact));
+}
+
+/** PATCH /portfolio/:entryId (child own, parent): title and reflection only. */
+export async function patchPortfolioEntry(c: Context<AppEnv>): Promise<Response> {
+  const session = requireSession(c);
+  const body = zodParse(PortfolioPatchBody.safeParse(await readJsonBody(c, (d) => d)));
+  if (Object.keys(body).length === 0) throw new ApiError("invalid_request");
+  const db = c.get("db");
+  const entry = findEntry(db, pathParam(c, "entryId"));
+  if (!entry) throw new ApiError("not_found");
+  accessibleChild(db, session, entry.childId);
+
+  const patch: Partial<typeof portfolioEntries.$inferInsert> = {};
+  if (body.title !== undefined) patch.title = body.title;
+  if (body.what_i_learned !== undefined) patch.whatILearned = body.what_i_learned;
+  if (body.what_i_would_improve !== undefined) patch.whatIWouldImprove = body.what_i_would_improve;
+  db.update(portfolioEntries).set(patch).where(eq(portfolioEntries.id, entry.id)).run();
+
+  const updated = findEntry(db, entry.id);
+  if (!updated) throw new ApiError("internal");
+  return c.json(entryJson(updated, findArtifact(db, entry.artifactId)));
+}
+
+/** DELETE /portfolio/:entryId (parent): entry + its artifact file (§5.7). */
+export async function deletePortfolioEntry(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const entry = findEntry(db, pathParam(c, "entryId"));
+  if (!entry) throw new ApiError("not_found");
+  const child = findChild(db, entry.childId);
+  assertFamily(session, child.familyId); // cross-family delete answers 404
+
+  const artifact = findArtifact(db, entry.artifactId);
+  // One entry per artifact (unique index), so the artifact goes with it.
+  db.transaction((tx) => {
+    tx.delete(portfolioEntries).where(eq(portfolioEntries.id, entry.id)).run();
+    if (artifact) tx.delete(artifacts).where(eq(artifacts.id, artifact.id)).run();
+  });
+  if (artifact) deleteArtifactFile(c.get("artifactDir"), artifact.storageKey);
+
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "portfolio.delete",
+    targetType: "portfolio_entry",
+    targetId: entry.id,
+    meta: artifact ? { artifact_id: artifact.id } : {}, // ids only (§7)
+  });
+  return c.json({ deleted: true });
+}
+
+/** DELETE /artifacts/:artifactId (parent): individual artifact removal. */
+export async function deleteArtifact(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const artifact = findArtifact(db, pathParam(c, "artifactId"));
+  if (!artifact) throw new ApiError("not_found");
+  const child = findChild(db, artifact.childId);
+  assertFamily(session, child.familyId);
+
+  // Entries must keep pointing at existing artifacts (invariant 4), so
+  // removing the artifact removes the entries that reference it too.
+  const entries = db
+    .select()
+    .from(portfolioEntries)
+    .where(eq(portfolioEntries.artifactId, artifact.id))
+    .all();
+  db.transaction((tx) => {
+    tx.delete(portfolioEntries).where(eq(portfolioEntries.artifactId, artifact.id)).run();
+    tx.delete(artifacts).where(eq(artifacts.id, artifact.id)).run();
+  });
+  deleteArtifactFile(c.get("artifactDir"), artifact.storageKey);
+
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "artifact.delete",
+    targetType: "artifact",
+    targetId: artifact.id,
+    meta: { entries_deleted: entries.length },
+  });
+  return c.json({ deleted: true, entries_deleted: entries.length });
+}
+
+/** GET /artifacts/:artifactId/file (parent, child own): safe serve (T10). */
+export async function getArtifactFile(c: Context<AppEnv>): Promise<Response> {
+  const session = requireSession(c);
+  const db = c.get("db");
+  const artifact = findArtifact(db, pathParam(c, "artifactId"));
+  if (!artifact) throw new ApiError("not_found");
+  accessibleChild(db, session, artifact.childId);
+
+  const bytes = readArtifactFile(c.get("artifactDir"), artifact.storageKey);
+  if (!bytes) {
+    // Operational detail by id only — no personal data in logs (§3/§7).
+    console.error(`[${c.get("requestId")}] missing artifact file ${artifact.id}`);
+    throw new ApiError("not_found");
+  }
+  // Stored mime is allowlisted at upload; attachment + nosniff means nothing
+  // ever renders or executes inline (SECURITY.md T10).
+  c.header("Content-Type", artifact.mime);
+  c.header("Content-Disposition", `attachment; filename="${artifact.storageKey}"`);
+  return c.body(new Uint8Array(bytes));
 }
