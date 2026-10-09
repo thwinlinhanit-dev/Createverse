@@ -67,8 +67,13 @@ export const ROUTES: RouteDef[] = [
   // API_SPEC §5.4 — sync (P1-08)
   { method: "POST", path: "/sync/events", role: "device", limit: "device", note: "Batch of events. Idempotent by event_id" },
 
-  // API_SPEC §5.10 — export (P1-08: events queryable per child)
+  // API_SPEC §5.10 — export and privacy (P1-08 events, P1-12 privacy)
   { method: "GET", path: "/children/:childId/export/events", role: "parent+fresh", limit: "session", note: "Paged events for one child" },
+  { method: "GET", path: "/children/:childId/export/portfolio", role: "parent+fresh", limit: "session", note: "Portfolio JSON and artifact file links (P1-12)" },
+  { method: "POST", path: "/children/:childId/delete", role: "parent+fresh", limit: "session", note: "Soft delete now, hard delete after the grace period (default 14 days)" },
+  { method: "POST", path: "/children/:childId/delete/cancel", role: "parent+fresh", limit: "session", note: "Cancel within the grace period" },
+  { method: "GET", path: "/audit", role: "parent", limit: "session", note: "Audit log (security-relevant actions, no personal content)" },
+  { method: "POST", path: "/family/delete", role: "parent+fresh", limit: "session", note: "Same flow for the whole family" },
   { method: "GET", path: "/children/:childId/overview", role: "parent", limit: "session", note: "Learning-first overview (API_SPEC §5.8)" },
   { method: "GET", path: "/children/:childId/safety-events", role: "parent", limit: "session", note: "Plain-language safety events sorted by severity (API_SPEC §5.8)" },
   { method: "POST", path: "/safety-events/:eventId/review", role: "parent", limit: "session", note: "Mark a safety event as reviewed (API_SPEC §5.8)" },

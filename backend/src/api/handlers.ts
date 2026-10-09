@@ -11,7 +11,8 @@ import {
   saveArtifactFile,
   svgIsSafe,
 } from "../modules/artifacts/fileStore.ts";
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import type { SQLWrapper } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "./middleware.ts";
 import {
@@ -27,10 +28,12 @@ import { ApiError } from "./errors.ts";
 import type { Db } from "../db/index.ts";
 import {
   artifacts,
+  auditLog,
   childSettings,
   children,
   devices,
   families,
+  passkeyCredentials,
   portfolioEntries,
   progressEvents,
   safetyEvents,
@@ -53,6 +56,15 @@ import {
   verifyLogin,
   verifyRegistration,
 } from "../modules/identity/passkeys.ts";
+import {
+  GRACE_PERIOD_DAYS,
+  cancelSoftDelete,
+  familyDeletionMarker,
+  purgeDueAt,
+  runDueHardDeletes,
+  softDeleteChild,
+} from "../modules/privacy/delete.ts";
+import { childPortfolio } from "../modules/privacy/export.ts";
 import type {
   AuthenticationResponseJSON,
   RegistrationResponseJSON,
@@ -149,10 +161,17 @@ function findUser(db: Db, userId: string) {
   return row;
 }
 
-function findChild(db: Db, childId: string) {
+/** Row lookup by id, including soft-deleted children (P1-12 cancel/delete). */
+function findChildAny(db: Db, childId: string) {
   const rows = db.select().from(children).where(eq(children.id, childId)).all();
   const row = rows[0];
-  if (!row || row.deletedAt !== null) throw new ApiError("not_found");
+  if (!row) throw new ApiError("not_found");
+  return row;
+}
+
+function findChild(db: Db, childId: string) {
+  const row = findChildAny(db, childId);
+  if (row.deletedAt !== null) throw new ApiError("not_found");
   return row;
 }
 
@@ -514,6 +533,8 @@ export async function createChild(c: Context<AppEnv>): Promise<Response> {
   const body = zodParse(ChildCreateBody.safeParse(await readJsonBody(c, (d) => d)));
   const db = c.get("db");
   const now = c.get("now");
+  // Family pending deletion (DATA_MODEL §7): no new children during grace.
+  if (familyDeletionMarker(db, session.familyId)) throw new ApiError("conflict");
   const childId = ids.child();
   db.insert(children)
     .values({
@@ -888,6 +909,16 @@ export async function exportChildEvents(c: Context<AppEnv>): Promise<Response> {
     .limit(limit + 1)
     .all();
 
+  // API_SPEC §7: every export reads the child's data — audit it (ids only).
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "child.export",
+    targetType: "child",
+    targetId: child.id,
+    meta: { scope: "events" },
+  });
+
   const page = rows.slice(0, limit);
   const last = page[page.length - 1];
   return c.json({
@@ -1194,6 +1225,16 @@ function requireSession(c: Context<AppEnv>): SessionContext {
 function requireChildId(c: Context<AppEnv>): string {
   const session = c.get("session");
   if (!session || session.kind !== "child" || !session.childId) throw new ApiError("forbidden");
+  // Defense in depth behind the sessions a soft delete removes (P1-12): a
+  // deleted child profile can no longer upload or write portfolio rows.
+  const rows = c
+    .get("db")
+    .select({ id: children.id, deletedAt: children.deletedAt })
+    .from(children)
+    .where(eq(children.id, session.childId))
+    .all();
+  const row = rows[0];
+  if (!row || row.deletedAt !== null) throw new ApiError("not_found");
   return session.childId;
 }
 
@@ -1517,4 +1558,258 @@ export async function reviewSafetyEvent(c: Context<AppEnv>): Promise<Response> {
 
   db.update(safetyEvents).set({ reviewedByParent: 1 }).where(eq(safetyEvents.id, row.id)).run();
   return c.json({ id: row.id, reviewed: true });
+}
+
+/* --------------------------------------------- P1-12 privacy (API_SPEC §5.10)
+ * Export and deletion per DATA_MODEL §7. Export responses stay paged so the
+ * app builds the ZIP on the device (§5.10 note; §8: no archive building in
+ * request handlers — the server-side archive builder lives in
+ * `modules/privacy/export.ts` for tests and the future admin CLI).
+ * Delete routes require `parent+fresh`: the passkey step-up is the parent's
+ * confirmation (DATA_MODEL §7 step 1 — the family is passkey-first,
+ * SECURITY.md §16.1). Every mutation opens with an opportunistic grace
+ * sweep so expired hard deletes are purged without a cron in Phase 1.
+ */
+
+/** GET /children/:childId/export/portfolio — entries + every artifact link. */
+export async function exportChildPortfolio(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const child = findChild(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId); // 404 across families — never leak existence
+
+  const { entries, artifacts: artifactRows } = childPortfolio(db, child.id);
+  const byId = new Map(artifactRows.map((row) => [row.id, row]));
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "child.export",
+    targetType: "child",
+    targetId: child.id,
+    meta: { scope: "portfolio" }, // ids/enums only (§7)
+  });
+  return c.json({
+    child_id: child.id,
+    entries: entries.map((entry) => entryJson(entry, byId.get(entry.artifactId) ?? null)),
+    artifacts: artifactRows.map((row) => ({ ...artifactJson(row), created_at: row.createdAt })),
+  });
+}
+
+/** POST /children/:childId/delete — soft delete now, purge after the grace. */
+export async function deleteChild(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const now = c.get("now");
+  runDueHardDeletes(db, now, c.get("artifactDir"));
+  const child = findChildAny(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId);
+
+  const result = softDeleteChild(db, child.id, now);
+  if (!result) throw new ApiError("not_found");
+  if (!result.alreadyDeleted) {
+    // Ids and counts only — the audit must outlive the data it describes (§7).
+    writeAudit(db, {
+      actorType: "parent",
+      actorId: session.userId,
+      action: "child.delete",
+      targetType: "child",
+      targetId: child.id,
+      meta: { grace_days: GRACE_PERIOD_DAYS },
+    });
+  }
+  return c.json({
+    ok: true,
+    id: child.id,
+    deleted_at: result.deletedAt,
+    purge_after: result.purgeAfter,
+    grace_days: GRACE_PERIOD_DAYS,
+  });
+}
+
+/** POST /children/:childId/delete/cancel — undo within the grace period. */
+export async function cancelChildDelete(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const now = c.get("now");
+  // Sweep first: an expired grace is already too late to cancel (404 after
+  // the purge — the child is gone, which is exactly what expiry means).
+  runDueHardDeletes(db, now, c.get("artifactDir"));
+  const child = findChildAny(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId);
+  if (child.deletedAt === null) throw new ApiError("conflict"); // nothing to cancel
+  // Family deletion has no cancel (API_SPEC §5.10 lists cancel per child only).
+  if (familyDeletionMarker(db, session.familyId)) throw new ApiError("conflict");
+
+  cancelSoftDelete(db, child.id);
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "child.delete_cancel",
+    targetType: "child",
+    targetId: child.id,
+  });
+  return c.json({ ok: true, id: child.id, restored_at: now });
+}
+
+/**
+ * POST /family/delete — same flow for all children, then users and devices
+ * (DATA_MODEL §7). Only the children are soft-deleted now; the audit marker
+ * starts the family's grace clock and the sweep removes users, devices and
+ * the family row once every child row is gone (master spec §5.6: consent
+ * withdrawal runs this flow; it never runs from child mode — role gate).
+ */
+export async function familyDelete(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const now = c.get("now");
+  runDueHardDeletes(db, now, c.get("artifactDir"));
+
+  const marker = familyDeletionMarker(db, session.familyId);
+  if (marker) {
+    // Already pending — idempotent, never writes a second marker.
+    return c.json({
+      ok: true,
+      children: 0,
+      deleted_at: marker.at,
+      purge_after: purgeDueAt(marker.at),
+      grace_days: GRACE_PERIOD_DAYS,
+    });
+  }
+
+  const active = db
+    .select({ id: children.id })
+    .from(children)
+    .where(and(eq(children.familyId, session.familyId), isNull(children.deletedAt)))
+    .all();
+  for (const row of active) {
+    softDeleteChild(db, row.id, now); // also kills that child's sessions
+    writeAudit(db, {
+      actorType: "parent",
+      actorId: session.userId,
+      action: "child.delete",
+      targetType: "child",
+      targetId: row.id,
+      meta: { grace_days: GRACE_PERIOD_DAYS },
+    });
+  }
+  // The marker row: it starts the family grace clock AND blocks child
+  // creation / per-child cancel until the family purge runs.
+  writeAudit(db, {
+    actorType: "parent",
+    actorId: session.userId,
+    action: "family.delete",
+    targetType: "family",
+    targetId: session.familyId,
+    meta: { children: active.length, grace_days: GRACE_PERIOD_DAYS },
+  });
+  return c.json({
+    ok: true,
+    children: active.length,
+    deleted_at: now,
+    purge_after: purgeDueAt(now),
+    grace_days: GRACE_PERIOD_DAYS,
+  });
+}
+
+function auditJson(row: typeof auditLog.$inferSelect) {
+  return {
+    id: row.id,
+    actor_type: row.actorType,
+    actor_id: row.actorId,
+    action: row.action,
+    target_type: row.targetType,
+    target_id: row.targetId,
+    at: row.at,
+    meta: row.meta,
+  };
+}
+
+/**
+ * GET /audit?cursor=&limit= — the family's security-relevant actions
+ * (API_SPEC §5.10/§7): ids, action names and enum/count meta only, never
+ * personal content. `audit_log` has no family_id column (DATA_MODEL §3 —
+ * no schema change for P1-12), so scoping matches rows the family's own
+ * actors performed or that target the family's own rows; the only
+ * actor-less rows are failed logins, attributed via their credential id.
+ */
+export async function listAudit(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+
+  const limitRaw = c.req.query("limit");
+  const limit = limitRaw === undefined ? EXPORT_PAGE_DEFAULT : Number(limitRaw);
+  if (!Number.isInteger(limit) || limit < 1 || limit > EXPORT_PAGE_MAX) {
+    throw new ApiError("invalid_request");
+  }
+
+  const userIds = db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.familyId, session.familyId))
+    .all()
+    .map((row) => row.id);
+  const childIds = db
+    .select({ id: children.id })
+    .from(children)
+    .where(eq(children.familyId, session.familyId))
+    .all()
+    .map((row) => row.id);
+  const deviceIds = db
+    .select({ id: devices.id })
+    .from(devices)
+    .where(eq(devices.familyId, session.familyId))
+    .all()
+    .map((row) => row.id);
+  const passkeyIds =
+    userIds.length === 0
+      ? []
+      : db
+          .select({ id: passkeyCredentials.id })
+          .from(passkeyCredentials)
+          .where(inArray(passkeyCredentials.userId, userIds))
+          .all()
+          .map((row) => row.id);
+
+  const scoped: SQLWrapper[] = [];
+  if (userIds.length > 0) {
+    scoped.push(inArray(auditLog.actorId, userIds), inArray(auditLog.targetId, userIds));
+  }
+  if (childIds.length > 0) {
+    scoped.push(inArray(auditLog.actorId, childIds), inArray(auditLog.targetId, childIds));
+  }
+  if (deviceIds.length > 0) {
+    scoped.push(inArray(auditLog.actorId, deviceIds), inArray(auditLog.targetId, deviceIds));
+  }
+  const familyScope = and(eq(auditLog.targetType, "family"), eq(auditLog.targetId, session.familyId));
+  if (familyScope) scoped.push(familyScope);
+  if (passkeyIds.length > 0) {
+    scoped.push(inArray(sql`json_extract(${auditLog.meta}, '$.credential_id')`, passkeyIds));
+  }
+  const scope = or(...scoped);
+  if (!scope) return c.json({ audit: [], next_cursor: null });
+  const conditions: SQLWrapper[] = [scope];
+
+  const cursorRaw = c.req.query("cursor");
+  if (cursorRaw !== undefined && cursorRaw !== "") {
+    const sep = cursorRaw.indexOf("#");
+    if (sep <= 0) throw new ApiError("invalid_request");
+    conditions.push(
+      sql`(${auditLog.at}, ${auditLog.id}) > (${cursorRaw.slice(0, sep)}, ${cursorRaw.slice(sep + 1)})`,
+    );
+  }
+
+  const rows = db
+    .select()
+    .from(auditLog)
+    .where(and(...conditions))
+    .orderBy(asc(auditLog.at), asc(auditLog.id))
+    .limit(limit + 1)
+    .all();
+
+  const page = rows.slice(0, limit);
+  const last = page[page.length - 1];
+  return c.json({
+    audit: page.map(auditJson),
+    next_cursor: rows.length > limit && last ? `${last.at}#${last.id}` : null,
+  });
 }

@@ -151,6 +151,7 @@ This is an engineering policy, not legal advice. A legal and privacy review is r
 - **Test a restore** before launch and after any schema migration.
 - Document recovery steps in `docs/operations/RECOVERY.md`. Target: restore within a day, losing at most a week.
 - Backups follow deletion rules: when a child is deleted, older backups age out on a documented schedule.
+  **Schedule: backups are kept 30 days** (master spec §5.6 "backup copies expire within 30 days", §21.7), so a deleted child's data leaves every backup copy within 30 days of deletion while primary rows purge after the 14-day grace (`DATA_MODEL.md` §7).
 
 ---
 

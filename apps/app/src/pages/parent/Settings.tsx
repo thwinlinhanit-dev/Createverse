@@ -110,7 +110,9 @@ export default function SettingsPage() {
       <section className="cv-page-section">
         <h3 className="cv-page-section-title">{t("settings.export.title")}</h3>
         <div className="cv-page-actions">
-          {/* Disabled until P1-12 ships export/delete; the copy below says so. */}
+          {/* P1-12 shipped the tested API behind these (API_SPEC §5.10); they
+              stay disabled until the app-side identity task (P1-18) wires a
+              parent session client — the app has no parent login yet. */}
           <Button label={t("settings.export.action")} secondary disabled />
           <Button label={t("settings.delete.action")} secondary disabled />
         </div>
