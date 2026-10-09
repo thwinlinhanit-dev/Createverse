@@ -49,6 +49,8 @@ const HANDLERS: Record<string, (c: Parameters<typeof handlers.health>[0]) => Pro
   "PATCH /children/:childId": handlers.patchChild,
   "PATCH /children/:childId/pin": handlers.setPin,
   "POST /children/:childId/open": handlers.openChild,
+  "POST /sync/events": handlers.syncEvents,
+  "GET /children/:childId/export/events": handlers.exportChildEvents,
   "GET /health": handlers.health,
 };
 

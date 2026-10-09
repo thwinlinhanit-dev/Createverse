@@ -6,7 +6,8 @@ import { blob, index, integer, sqliteTable, text, uniqueIndex } from "drizzle-or
  * Only the tables P1-01 owns are defined here: families, users,
  * passkey_credentials, sessions, devices, children, child_settings,
  * audit_log, setup_secrets, auth_challenges. Tables owned by other modules
- * (progress_events, artifacts, ...) are added by their own tasks.
+ * (artifacts, ...) are added by their own tasks. `progress_events` arrived
+ * with P1-08 (DATA_MODEL §3: created by the owning task).
  *
  * Deviations recorded in DATA_MODEL.md:
  * - `sessions` is not in §3 — added because API_SPEC §2 requires server-side
@@ -198,4 +199,35 @@ export const authChallenges = sqliteTable(
     consumedAt: text("consumed_at"),
   },
   (t) => [uniqueIndex("auth_challenges_challenge_unique").on(t.challenge)],
+);
+
+/**
+ * Progress event log — DATA_MODEL §3, P1-08. The append-only source of
+ * truth for learning history (invariant 2: no updates, no deletes outside
+ * the child-deletion workflow). `event_id` is client-generated (UUIDv7),
+ * making `POST /sync/events` idempotent by primary key. `received_at` is
+ * stamped by the server on arrival; indexes match DATA_MODEL §3 exactly.
+ */
+export const progressEvents = sqliteTable(
+  "progress_events",
+  {
+    eventId: text("event_id").primaryKey(),
+    childId: text("child_id")
+      .notNull()
+      .references(() => children.id),
+    deviceId: text("device_id")
+      .notNull()
+      .references(() => devices.id),
+    type: text("type").notNull(),
+    schemaVersion: integer("schema_version").notNull(),
+    occurredAt: text("occurred_at").notNull(),
+    receivedAt: text("received_at").notNull(),
+    contentId: text("content_id"),
+    contentVersion: integer("content_version"),
+    payload: text("payload", { mode: "json" }).notNull(),
+  },
+  (t) => [
+    index("idx_events_child_time").on(t.childId, t.occurredAt),
+    index("idx_events_type").on(t.childId, t.type),
+  ],
 );

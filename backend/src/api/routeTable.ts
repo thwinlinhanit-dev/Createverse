@@ -53,6 +53,12 @@ export const ROUTES: RouteDef[] = [
   { method: "PATCH", path: "/children/:childId/pin", role: "parent+fresh", limit: "session", note: "Set or clear PIN" },
   { method: "POST", path: "/children/:childId/open", role: "device", limit: "auth", note: "Open child profile on device" },
 
+  // API_SPEC §5.4 — sync (P1-08)
+  { method: "POST", path: "/sync/events", role: "device", limit: "device", note: "Batch of events. Idempotent by event_id" },
+
+  // API_SPEC §5.10 — export (P1-08: events queryable per child)
+  { method: "GET", path: "/children/:childId/export/events", role: "parent+fresh", limit: "session", note: "Paged events for one child" },
+
   // API_SPEC §5.11 — health
   { method: "GET", path: "/health", role: "public", limit: "none", note: "Liveness" },
 ];

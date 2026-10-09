@@ -368,6 +368,11 @@ describe("sync outbox (server arrives with P1-08)", () => {  it("clears confirme
     expect(store.summary().totalEvents).toBe(2);
   });
 
+  it("exposes the sync scope for the API_SPEC §5.4 body", async () => {
+    const store = await openStore();
+    expect(store.syncScope()).toEqual({ childId: CHILD, deviceId: DEVICE });
+  });
+
   it("a missing or failing endpoint keeps the outbox intact", async () => {
     const store = await openStore();
     await store.appendEvent("child.project.started", {}, null);

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import type { Context } from "hono";
 import type { AppEnv } from "./middleware.ts";
 import {
@@ -12,7 +12,14 @@ import {
 } from "./middleware.ts";
 import { ApiError } from "./errors.ts";
 import type { Db } from "../db/index.ts";
-import { childSettings, children, devices, families, users } from "../db/schema.ts";
+import {
+  childSettings,
+  children,
+  devices,
+  families,
+  progressEvents,
+  users,
+} from "../db/schema.ts";
 import { ids, newToken } from "../modules/identity/ids.ts";
 import { writeAudit } from "../modules/identity/audit.ts";
 import {
@@ -680,4 +687,167 @@ export async function openChild(c: Context<AppEnv>): Promise<Response> {
 
 export async function health(c: Context<AppEnv>): Promise<Response> {
   return c.json({ ok: true, version: "0.1.0" });
+}
+
+/* ------------------------------------------------------------------ sync
+ * P1-08 — API_SPEC §5.4 (POST /sync/events) and §5.10 (paged events).
+ * Append-only ingest, idempotent by event_id; ownership is always derived
+ * from the authenticated device or parent session, never from client ids
+ * (API_SPEC §2 "always derive ownership from the session").
+ */
+
+/** DATA_MODEL §4 catalogue — anything else is rejected as `unknown_type`. */
+const SYNC_EVENT_TYPES = new Set([
+  "child.project.started",
+  "child.activity.completed",
+  "child.experiment.executed",
+  "child.artifact.created",
+  "child.reflection.submitted",
+  "child.assessment.completed",
+  "child.project.completed",
+  "child.skill.updated",
+  "child.interest.detected",
+  "ai.hint.requested",
+  "ai.safety.flagged",
+  "parent.settings.changed",
+]);
+
+/** Accepts both the app's shared-types event shape and the API_SPEC §5.4 example. */
+const SyncEventShape = z.strictObject({
+  event_id: z
+    .string()
+    .regex(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      "must be a UUID",
+    ),
+  child_id: z.string().min(1).optional(),
+  device_id: z.string().min(1).optional(),
+  type: z.string().min(1),
+  schema_version: z.number().int().positive(),
+  occurred_at: z.iso.datetime(),
+  received_at: z.iso.datetime().optional(),
+  content_id: z.string().min(1).optional(),
+  content_version: z.number().int().positive().optional(),
+  content_ref: z
+    .strictObject({ id: z.string().min(1), version: z.number().int().positive() })
+    .optional(),
+  payload: z.record(z.string(), z.unknown()).default({}),
+});
+
+/** Sync batch cap: API_SPEC §4 — 50 events per request. */
+const SyncBody = z.strictObject({
+  childId: z.string().min(1),
+  deviceId: z.string().min(1),
+  events: z.array(SyncEventShape).min(1).max(50),
+});
+
+export async function syncEvents(c: Context<AppEnv>): Promise<Response> {
+  const deviceId = c.get("deviceId");
+  if (!deviceId) throw new ApiError("unauthenticated");
+  const body = zodParse(SyncBody.safeParse(await readJsonBody(c, (d) => d)));
+  const db = c.get("db");
+  const now = c.get("now");
+
+  // Ownership from the credential: the child must live in this device's
+  // family. A foreign child id answers 404 — existence never leaks (§6).
+  const deviceRows = db.select().from(devices).where(eq(devices.id, deviceId)).all();
+  const device = deviceRows[0];
+  if (!device || device.revokedAt !== null) throw new ApiError("unauthenticated");
+  const childRows = db.select().from(children).where(eq(children.id, body.childId)).all();
+  const child = childRows[0];
+  if (!child || child.deletedAt !== null || child.familyId !== device.familyId) {
+    throw new ApiError("not_found");
+  }
+
+  const accepted: string[] = [];
+  const duplicates: string[] = [];
+  const rejected: { event_id: string; reason: string }[] = [];
+
+  db.transaction((tx) => {
+    for (const event of body.events) {
+      if (!SYNC_EVENT_TYPES.has(event.type)) {
+        rejected.push({ event_id: event.event_id, reason: "unknown_type" });
+        continue;
+      }
+      if (event.child_id !== undefined && event.child_id !== body.childId) {
+        rejected.push({ event_id: event.event_id, reason: "child_mismatch" });
+        continue;
+      }
+      const result = tx
+        .insert(progressEvents)
+        .values({
+          eventId: event.event_id,
+          childId: child.id, // validated above — derived from the credential
+          deviceId, // authenticated device, never the client's field
+          type: event.type,
+          schemaVersion: event.schema_version,
+          occurredAt: event.occurred_at,
+          receivedAt: now, // server receive time (DATA_MODEL §3)
+          contentId: event.content_id ?? event.content_ref?.id ?? null,
+          contentVersion: event.content_version ?? event.content_ref?.version ?? null,
+          payload: event.payload,
+        })
+        .onConflictDoNothing({ target: progressEvents.eventId })
+        .run();
+      // Retries (same event_id) are acknowledged, never stored twice.
+      if (Number(result.changes) === 0) duplicates.push(event.event_id);
+      else accepted.push(event.event_id);
+    }
+    tx.update(devices).set({ lastSyncAt: now }).where(eq(devices.id, deviceId)).run();
+  });
+
+  return c.json({ accepted, duplicates, rejected });
+}
+
+/** Paged events for one child (API_SPEC §5.10; the archive builder reads this). */
+const EXPORT_PAGE_DEFAULT = 100;
+const EXPORT_PAGE_MAX = 500;
+
+export async function exportChildEvents(c: Context<AppEnv>): Promise<Response> {
+  const session = requireParent(c);
+  const db = c.get("db");
+  const child = findChild(db, pathParam(c, "childId"));
+  assertFamily(session, child.familyId); // 404 across families — never leak existence
+
+  const limitRaw = c.req.query("limit");
+  const limit = limitRaw === undefined ? EXPORT_PAGE_DEFAULT : Number(limitRaw);
+  if (!Number.isInteger(limit) || limit < 1 || limit > EXPORT_PAGE_MAX) {
+    throw new ApiError("invalid_request");
+  }
+
+  const cursorRaw = c.req.query("cursor");
+  const conditions = [eq(progressEvents.childId, child.id)];
+  if (cursorRaw !== undefined && cursorRaw !== "") {
+    const sep = cursorRaw.indexOf("#");
+    if (sep <= 0) throw new ApiError("invalid_request");
+    conditions.push(
+      sql`(${progressEvents.occurredAt}, ${progressEvents.eventId}) > (${cursorRaw.slice(0, sep)}, ${cursorRaw.slice(sep + 1)})`,
+    );
+  }
+
+  const rows = db
+    .select()
+    .from(progressEvents)
+    .where(and(...conditions))
+    .orderBy(asc(progressEvents.occurredAt), asc(progressEvents.eventId))
+    .limit(limit + 1)
+    .all();
+
+  const page = rows.slice(0, limit);
+  const last = page[page.length - 1];
+  return c.json({
+    events: page.map((row) => ({
+      event_id: row.eventId,
+      child_id: row.childId,
+      device_id: row.deviceId,
+      type: row.type,
+      schema_version: row.schemaVersion,
+      occurred_at: row.occurredAt,
+      received_at: row.receivedAt,
+      content_id: row.contentId,
+      content_version: row.contentVersion,
+      payload: row.payload,
+    })),
+    next_cursor: rows.length > limit && last ? `${last.occurredAt}#${last.eventId}` : null,
+  });
 }

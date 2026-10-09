@@ -87,17 +87,28 @@ export function useProgressStore(childId: string): {
   return { store, ready };
 }
 
-async function postSyncEvents(events: readonly ProgressEvent[]): Promise<readonly string[]> {
+async function postSyncEvents(
+  scope: { childId: string; deviceId: string },
+  events: readonly ProgressEvent[],
+): Promise<readonly string[]> {
   const response = await fetch("/api/v1/sync/events", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ events }),
+    // API_SPEC §5.4 body shape. Auth (device credential / session headers)
+    // arrives with the app-side identity task; until then the server answers
+    // 401 and the outbox simply retains everything.
+    body: JSON.stringify({ childId: scope.childId, deviceId: scope.deviceId, events }),
   });
   if (!response.ok) throw new Error(`sync HTTP ${response.status}`);
-  const body = (await response.json()) as { stored?: unknown };
-  return Array.isArray(body.stored)
-    ? body.stored.filter((id): id is string => typeof id === "string")
-    : [];
+  const body = (await response.json()) as {
+    accepted?: unknown;
+    duplicates?: unknown;
+  };
+  const ids = (value: unknown): string[] =>
+    Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
+  // Duplicates are stored server-side too — both may leave the outbox.
+  // Rejected events stay pending (they are never acknowledged as stored).
+  return [...ids(body.accepted), ...ids(body.duplicates)];
 }
 
 /** Best-effort push; safe to call before P1-08 builds the endpoint. */
@@ -108,7 +119,8 @@ export async function syncNow(
     if (typeof navigator !== "undefined" && navigator.onLine === false) {
       return { synced: 0, pending: store.pendingEvents().length };
     }
-    return await store.sync(postSyncEvents);
+    const scope = store.syncScope();
+    return await store.sync((events) => postSyncEvents(scope, events));
   } catch {
     return { synced: 0, pending: store.pendingEvents().length };
   }

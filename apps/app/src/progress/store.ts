@@ -713,6 +713,15 @@ export class ProgressStore {
 
   // ---- sync outbox (server side arrives with P1-08) -------------------------
 
+  /**
+   * Identity for `POST /sync/events` (API_SPEC §5.4): the scope the server
+   * needs alongside the batch. The server still trusts only the credential.
+   */
+  syncScope(): { childId: string; deviceId: string } {
+    this.ensureLoaded();
+    return { childId: this.childId, deviceId: this.deviceId };
+  }
+
   pendingEvents(): readonly ProgressEvent[] {
     this.ensureLoaded();
     const pending = new Set(this.outbox);

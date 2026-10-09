@@ -162,12 +162,13 @@ TEST PLAN: eval set (mock + recorded) plus an offline run with live AI off — `
 ACCEPTANCE CRITERIA: passes the eval set (mock + recorded, `pnpm test` green); works fully offline from live AI (no provider is constructed in the app; offline walk covered by tests).
 DEPENDENCIES: P0-06.
 
-## P1-08 — Progress log — **TODO**
+## P1-08 — Progress log — **DONE**
 
 GOAL: Timestamped, traceable learning events queryable per child.
 REQUIREMENTS: events stored append-only, scoped by family and child; resumable sync client-side in IndexedDB, then `POST /sync/events` idempotent by `event_id` (API_SPEC §1, ARCHITECTURE.md §6).
-TEST PLAN: duplicate push deduped; events queryable per child; cross-child query denied.
-ACCEPTANCE CRITERIA: events queryable per child; retries never duplicate rows.
+DONE: `progress_events` table in `backend/src/db/schema.ts` exactly per DATA_MODEL §3 (both indexes; append-only by invariant 2) with generated migration `backend/migrations/0001_p1_08_progress_events.sql`. **`POST /sync/events`** (role `device`, 30/min/device): strict-Zod body `{childId, deviceId, events}` ≤50 (API_SPEC §4 cap) accepting both the shared-types event shape and the §5.4 `content_ref` example; the child must belong to the authenticated device's family (404 otherwise — existence never leaks, §6); DATA_MODEL §4 catalogue enforced (`unknown_type` rejected), per-event `child_mismatch` rejected; `INSERT … ON CONFLICT DO NOTHING` so retries come back as `duplicates` and are never stored twice; server-stamped `received_at`, `devices.last_sync_at` updated, whole batch in one transaction. **`GET /children/:childId/export/events?cursor=&limit=`** (role `parent+fresh`): family ownership checked (404 across families), keyset paging on `(occurred_at, event_id)` so same-timestamp events page losslessly, limit 1–500. Both routes are declared in `routeTable.ts`, so the authorization-matrix test covers them. Client: `ProgressStore.syncScope()` and `postSyncEvents` now send the §5.4 body; the outbox clears on `accepted ∪ duplicates` (rejected events stay pending; auth headers arrive with the app-identity task — until then the server answers 401 and the outbox retains, as designed).
+TEST PLAN: duplicate push deduped; events queryable per child; cross-child query denied — `backend/test/sync.test.ts` (11 tests: batch accept + field mapping, retry → duplicates with row count unchanged, mixed accepted/duplicate/rejected batch, cross-family 404 on both endpoints, 50-event cap, device credential required, time-ordered cursor paging incl. a same-timestamp tie, malformed cursor/limit, unauthenticated reads) plus the generated matrix rows.
+ACCEPTANCE CRITERIA: events queryable per child ✓; retries never duplicate rows ✓ (asserted directly).
 DEPENDENCIES: P1-05.
 
 ## P1-09 — Portfolio — **TODO**
