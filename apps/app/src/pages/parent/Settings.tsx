@@ -1,10 +1,24 @@
+import { useState } from "react";
 import { useApp } from "../../AppContext";
 import { stageAgeKey, useT } from "../../i18n";
 import { Button, Chip } from "../../components/ui";
+import {
+  getLiveAiChoice,
+  setLiveAiChoice,
+  type LiveAiChoice,
+} from "../../mentor/settings.ts";
 
 export default function SettingsPage() {
   const { profile, setProfileStage, setProfileLanguage } = useApp();
   const t = useT();
+  // P1-07: the parent live-AI switch is real — MentorService reads it on
+  // every request (default off; Junior is never allowed regardless).
+  const [liveChoice, setLiveChoice] = useState<LiveAiChoice>(() => getLiveAiChoice());
+
+  function chooseLiveAi(choice: LiveAiChoice): void {
+    setLiveAiChoice(choice);
+    setLiveChoice(choice);
+  }
 
   const stageOptions = [
     { value: "junior" as const, label: t(stageAgeKey("junior")) },
@@ -64,9 +78,21 @@ export default function SettingsPage() {
       <section className="cv-page-section">
         <h3 className="cv-page-section-title">{t("settings.ai.title")}</h3>
         <div className="cv-settings-group">
-          <Chip label={t("settings.ai.off")} selected={true} />
-          <Chip label={t("settings.ai.explorer")} />
-          <Chip label={t("settings.ai.maker")} />
+          <Chip
+            label={t("settings.ai.off")}
+            selected={liveChoice === "off"}
+            onClick={() => chooseLiveAi("off")}
+          />
+          <Chip
+            label={t("settings.ai.explorer")}
+            selected={liveChoice === "explorer"}
+            onClick={() => chooseLiveAi("explorer")}
+          />
+          <Chip
+            label={t("settings.ai.maker")}
+            selected={liveChoice === "maker"}
+            onClick={() => chooseLiveAi("maker")}
+          />
         </div>
         <p className="cv-page-empty">{t("settings.ai.body")}</p>
       </section>

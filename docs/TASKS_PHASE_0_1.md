@@ -153,12 +153,13 @@ TEST PLAN: replay fixture events and compare derived rows — `evidenceReplay.te
 ACCEPTANCE CRITERIA: completing activities updates skill evidence deterministically — `store.test.ts` pins exact rows after `finishAttempt`, step-type concept mapping, and identical rows after a reload.
 DEPENDENCIES: P1-05.
 
-## P1-07 — AI mentor service — **TODO**
+## P1-07 — AI mentor service — **DONE**
 
 GOAL: Full MentorService in the app: hint ladder, age-aware tone, safety pipeline v0, cached + pre-generated fallback.
 REQUIREMENTS: wire ai-core to content hint ladders; live AI only if parent-enabled, stage-allowed (not Junior), and inside budget; transcripts parent-visible; kill switch honored.
-TEST PLAN: eval set (mock + recorded) plus an offline run with live AI off.
-ACCEPTANCE CRITERIA: passes the eval set; works fully offline from live AI.
+DONE: app wiring in `apps/app/src/mentor/` — `createMentor({stage, ladderFor, ...})` builds a `MentorService` per request: content hint ladders via `learning-core` `getNextHint` (stage-scoped bundles = age-aware tone offline), `createRuleBasedSafety()` pipeline (SAFETY.md §2), a shared budget guard (AI_SPEC §7 example caps), and the **new ai-core response cache** (AI_SPEC §3 layer 2: `ResponseCache`, `responseCacheKey` = stage|locale|step|FNV-1a digest of the message, `createResponseCache`; no personal data stored). Gates live in `settings.ts`: parent live-AI switch (default off; localStorage + memory fallback), family kill switch, stage rules — Junior never, "On for Explorer/Maker" unlocks only that stage. Phase 1 constructs **no provider anywhere** (ADR-0005) so every request is offline; `provider`/`budget`/`cache` factory options are test hooks only. `StepRunner` routes "Get a hint" through MentorService (lab-run `attemptCount` feeds the solution gate) and logs a **parent-visible transcript** (`transcript.ts`: ids/enums/source/safety only, 90-day retention, 200-turn cap) rendered on the parent Progress page; parent Settings' Live AI chips are now functional. i18n: `progress.mentor.*` keys in both locales.
+TEST PLAN: eval set (mock + recorded) plus an offline run with live AI off — `ai/evals` runs green inside `pnpm test`; new `apps/app/src/mentor/mentor.test.ts` (16 tests: offline ladder walk + exhaustion, all four gates with a mock provider, settings defaults/corruption, transcript shape/retention/cap/recovery) and 3 new ai-core cache tests.
+ACCEPTANCE CRITERIA: passes the eval set (mock + recorded, `pnpm test` green); works fully offline from live AI (no provider is constructed in the app; offline walk covered by tests).
 DEPENDENCIES: P0-06.
 
 ## P1-08 — Progress log — **TODO**
@@ -181,6 +182,7 @@ DEPENDENCIES: P1-05.
 
 GOAL: Concepts, skills, projects, interests, struggles, next suggestions; time and content controls.
 REQUIREMENTS: learning-first composition (DESIGN_SYSTEM §7); no screen-time-first dashboard; controls enforced server-side (API_SPEC §6.4).
+CLIENT SLICE DONE (2026-10-09): parent Overview renders the P1-06 evidence rows — `store.skillEvidence()` with configured levels + assessments from the content bundle — as `overview.concepts.row` / `overview.skills.row` (name, numeric level, evidence count) in en + zh-Hant; numeric levels live here (FR-40 parent view) while the child's Me screen keeps "no levels"; `overview.test.tsx` renders the real shell, passes the gate, and asserts rows in both locales plus the empty-state fallback. Remaining: server-side parts (family-scoped overview endpoint, settings step-up) wait on P1-08.
 TEST PLAN: overview endpoint scoped by family; settings change requires step-up.
 ACCEPTANCE CRITERIA: overview reads as learning evidence, not metrics; time is last.
 DEPENDENCIES: P1-08.

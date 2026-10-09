@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@createverse/ai-core": "workspace:*",
     "@createverse/design-tokens": "workspace:*",
     "@createverse/experience-runtime": "workspace:*",
     "@createverse/i18n": "workspace:*",

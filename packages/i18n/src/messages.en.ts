@@ -137,7 +137,10 @@ export const en = {
   "overview.stage.body": "Exploring as {stage}. Set by a grown-up.",
   "overview.concepts.label": "Concepts growing",
   "overview.concepts.body": "Testing a bridge · Choosing good planks · Seeing what holds",
+  "overview.concepts.row": "{name} — level {level} of {levels}",
   "overview.skills.label": "Skills developing",
+  "overview.skills.row":
+    "{name} — level {level} of {levels}, {count, plural, one {# evidence entry} other {# evidence entries}}",
   "overview.skills.body":
     "I can test a bridge · I can choose good planks · I can explain what worked",
   "overview.completed.title": "Projects completed",
@@ -170,6 +173,11 @@ export const en = {
   "progress.how.saved": "Saved as you go",
   "progress.how.offline": "Works offline",
   "progress.how.notime": "No time pressure",
+  "progress.mentor.title": "Mentor help",
+  "progress.mentor.empty":
+    "No hints asked yet. Each hint request shows here with its step, level and date.",
+  "progress.mentor.item": "{step} — hint {level} · {date}",
+  "progress.mentor.fallback": "{step} — offered to ask a grown-up · {date}",
 
   // ---- parent: portfolio -------------------------------------------------
   "portfolio.title": "Portfolio",

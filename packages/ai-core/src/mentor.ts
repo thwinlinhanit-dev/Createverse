@@ -1,5 +1,6 @@
 import type {
   AIProvider,
+  AIResponse,
   BudgetGuard,
   HelpContext,
   HelpResult,
@@ -36,11 +37,55 @@ export interface MentorOptions {
   readonly safety: SafetyLayer;
   readonly provider?: AIProvider;
   readonly budget?: BudgetGuard;
+  /** Response cache (AI_SPEC.md §3). Optional; without it, every live call hits the provider. */
+  readonly cache?: ResponseCache;
   readonly settings?: MentorSettings;
 }
 
 export const DEFAULT_LIVE_ESTIMATE_TOKENS = 500;
 export const FALLBACK_TEXT_KEY = "safety.ask_grownup";
+
+/**
+ * Layer 2 of the mentor stack (AI_SPEC.md §3): a device-local cache of live
+ * responses, so a repeated question costs nothing. Keys combine stage,
+ * locale, step and a one-way digest of the message — the raw free text is
+ * never stored (AI_SPEC.md §46 "response cache — no personal data").
+ */
+export interface ResponseCache {
+  get(key: string): AIResponse | undefined;
+  set(key: string, response: AIResponse): void;
+}
+
+/** One-way FNV-1a digest so raw free text never becomes a key. */
+function digest(text: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16);
+}
+
+export function responseCacheKey(ctx: HelpContext): string {
+  return [ctx.stage, ctx.locale, ctx.stepId, digest(ctx.message ?? "")].join("|");
+}
+
+/** Small in-memory cache with an insertion-ordered cap; never persisted. */
+export function createResponseCache(maxEntries = 50): ResponseCache {
+  const map = new Map<string, AIResponse>();
+  return {
+    get: (key) => map.get(key),
+    set: (key, response) => {
+      map.delete(key);
+      map.set(key, response);
+      while (map.size > maxEntries) {
+        const oldest = map.keys().next();
+        if (oldest.done) break;
+        map.delete(oldest.value);
+      }
+    },
+  };
+}
 
 function mapInputVerdict(verdict: InputVerdict): {
   safety: SafetyStatus;
@@ -83,6 +128,7 @@ export class MentorService {
   private readonly safety: SafetyLayer;
   private readonly provider?: AIProvider;
   private readonly budget?: BudgetGuard;
+  private readonly cache?: ResponseCache;
   private readonly settings: MentorSettings;
 
   constructor(options: MentorOptions) {
@@ -90,6 +136,7 @@ export class MentorService {
     this.safety = options.safety;
     this.provider = options.provider;
     this.budget = options.budget;
+    this.cache = options.cache;
     this.settings = options.settings ?? {};
   }
 
@@ -102,6 +149,13 @@ export class MentorService {
       }
 
       try {
+        const cacheKey = responseCacheKey(ctx);
+        const cached = this.cache?.get(cacheKey);
+        if (cached) {
+          // Cache hit: no provider call and no tokens against the budget.
+          return { source: "cache", safety: "ok", text: cached.text };
+        }
+
         const response = await this.provider!.complete({
           systemPrompt: systemPromptFor(ctx),
           userText: ctx.message,
@@ -117,6 +171,7 @@ export class MentorService {
         }
 
         this.budget?.record(response.usage, { childId: ctx.childId });
+        this.cache?.set(cacheKey, response);
         return { source: "live", safety: "ok", text: response.text };
       } catch {
         // Provider error or timeout: next pre-written hint, silently (AI_SPEC.md §13).

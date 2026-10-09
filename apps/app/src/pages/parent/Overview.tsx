@@ -1,3 +1,5 @@
+import { CONCEPT_MAX_LEVEL } from "@createverse/shared-types";
+import { DEFAULT_SKILL_LEVELS } from "@createverse/learning-core";
 import { useApp } from "../../AppContext";
 import { stageAgeKey, useT } from "../../i18n";
 import { Button, Card, Chip } from "../../components/ui";
@@ -6,8 +8,11 @@ import { useProgressStore } from "../../progress/useProgress.ts";
 
 /**
  * Overview: learning evidence first, time last (DESIGN_SYSTEM §7).
- * Completed-project count, concepts and skills are real on-device data
- * (P1-05 store); interests and suggestions stay descriptive until P1-06.
+ * Completed-project count is real on-device data (P1-05 store); concepts and
+ * skills render the P1-06 evidence rows replayed from the event log — numeric
+ * levels live here because FR-40 is the parent view (the child's Me screen
+ * keeps "no levels", PRODUCT_SPEC §Me). Interests and suggestions stay
+ * descriptive until P1-10's server-backed slice.
  */
 export default function OverviewPage() {
   const { profile, navigateTo } = useApp();
@@ -18,6 +23,16 @@ export default function OverviewPage() {
 
   const summary = ready && store ? store.summary() : null;
   const stageLabel = t(stageAgeKey(profile.stage));
+
+  // P1-06 evidence replay: configured skill levels and assessment signals
+  // come from the content bundle; the store itself never holds content.
+  const levelsBySkill: Record<string, number> = bundle
+    ? Object.fromEntries(bundle.graph.skills.map((s) => [s.id, s.levels] as const))
+    : {};
+  const evidence =
+    ready && store
+      ? store.skillEvidence({ levelsBySkill, assessments: bundle?.assessments ?? [] })
+      : null;
 
   function conceptName(id: string): string {
     const node = bundle?.graph.concepts.find((c) => c.id === id);
@@ -33,12 +48,36 @@ export default function OverviewPage() {
     return id;
   }
 
-  const concepts = summary && summary.conceptsSeen.length > 0
-    ? summary.conceptsSeen.map(conceptName).join(" · ")
-    : null;
-  const skills = summary && summary.skillsPracticed.length > 0
-    ? summary.skillsPracticed.map(skillName).join(" · ")
-    : null;
+  // Evidence rows (name + numeric level + evidence count) are the headline;
+  // summary names remain as the fallback for logs written before P1-06.
+  const conceptRowText = (evidence?.concepts ?? []).map((row) =>
+    t("overview.concepts.row", {
+      name: conceptName(row.conceptId),
+      level: row.level,
+      levels: CONCEPT_MAX_LEVEL,
+    }),
+  );
+  const skillRowText = (evidence?.skills ?? []).map((row) =>
+    t("overview.skills.row", {
+      name: skillName(row.skillId),
+      level: row.level,
+      levels: levelsBySkill[row.skillId] ?? DEFAULT_SKILL_LEVELS,
+      count: row.evidenceCount,
+    }),
+  );
+
+  const concepts =
+    conceptRowText.length > 0
+      ? conceptRowText.join(" · ")
+      : summary && summary.conceptsSeen.length > 0
+        ? summary.conceptsSeen.map(conceptName).join(" · ")
+        : null;
+  const skills =
+    skillRowText.length > 0
+      ? skillRowText.join(" · ")
+      : summary && summary.skillsPracticed.length > 0
+        ? summary.skillsPracticed.map(skillName).join(" · ")
+        : null;
   const completed = summary?.completedCount ?? 0;
 
   return (

@@ -4,8 +4,10 @@ import { useT } from "../i18n";
 
 /**
  * Pre-written hint ladder (P1-05/P1-07 offline path).
- * Levels come from content, advance one at a time via `learning-core`, and
- * never consult live AI — the full journey works with live AI disabled.
+ * Levels come from content and advance one at a time via `learning-core`;
+ * the button only signals intent — the caller routes the request through
+ * `MentorService` (P1-07), which derives the same next level, applies the
+ * safety pipeline, and never consults live AI unless every gate allows it.
  * Each shown hint is recorded by the caller (`recordHint`), which persists
  * the level so a reload resumes mid-ladder instead of restarting it.
  */
@@ -18,7 +20,7 @@ export function HintPanel({
   ladder: HintLadder;
   messages: Readonly<Record<string, string>>;
   progress: HintProgress;
-  onHint: (level: number) => void;
+  onHint: () => void;
 }) {
   const t = useT();
   const next = getNextHint(ladder, progress);
@@ -43,7 +45,7 @@ export function HintPanel({
           type="button"
           className="cv-hint"
           aria-label={t("hint.getLevel", { level: next.level })}
-          onClick={() => onHint(next.level)}
+          onClick={onHint}
         >
           {t("hint.get")}
         </button>

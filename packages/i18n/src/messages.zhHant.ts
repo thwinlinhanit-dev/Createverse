@@ -134,7 +134,9 @@ export const zhHant: Record<MessageKey, string> = {
   "overview.stage.body": "以「{stage}」的身份探索。由家長設定。",
   "overview.concepts.label": "正在成長的概念",
   "overview.concepts.body": "測試一座橋 · 選擇好的木板 · 看什麼能撐住",
+  "overview.concepts.row": "{name} — 第 {level} 級（共 {levels} 級）",
   "overview.skills.label": "正在發展的技能",
+  "overview.skills.row": "{name} — 第 {level} 級（共 {levels} 級），{count} 筆證據",
   "overview.skills.body": "我可以測試一座橋 · 我可以選擇好的木板 · 我可以解釋什麼有效",
   "overview.completed.title": "已完成的專案",
   "overview.completed.count":
@@ -163,6 +165,10 @@ export const zhHant: Record<MessageKey, string> = {
   "progress.how.saved": "邊做邊保存",
   "progress.how.offline": "離線也能用",
   "progress.how.notime": "沒有時間壓力",
+  "progress.mentor.title": "導師協助",
+  "progress.mentor.empty": "還沒有請求提示。每次請求會在這裡顯示步驟、提示層級與日期。",
+  "progress.mentor.item": "{step} — 第 {level} 個提示 · {date}",
+  "progress.mentor.fallback": "{step} — 建議請大人幫忙 · {date}",
 
   // ---- parent: portfolio -------------------------------------------------
   "portfolio.title": "作品集",

@@ -4,6 +4,7 @@ import { useApp } from "../../AppContext";
 import { useT } from "../../i18n";
 import { Card, Chip } from "../../components/ui";
 import { useBundle } from "../../content/useBundle.ts";
+import { listMentorTurns } from "../../mentor/index.ts";
 import { useProgressStore } from "../../progress/useProgress.ts";
 
 /**
@@ -32,6 +33,8 @@ export default function ProgressPage() {
   const summary = ready && store ? store.summary() : null;
   const recent: readonly ProgressEvent[] =
     ready && store ? store.recentEvents(5).filter((e) => KNOWN_EVENT_DESCRIPTIONS[e.type]) : [];
+  // P1-07: parent-visible mentor transcript (ids and enums only).
+  const turns = ready ? listMentorTurns(profile.id).slice(0, 10) : [];
 
   function projectTitleFor(contentId: string | undefined): string {
     if (!contentId) return t("project.bridge.title");
@@ -55,12 +58,23 @@ export default function ProgressPage() {
     return t(key, { project: projectTitleFor(event.content_id) });
   }
 
-  function dayOf(event: ProgressEvent): string {
+  function dayString(iso: string): string {
     try {
-      return new Date(event.occurred_at).toLocaleDateString(profile.language);
+      return new Date(iso).toLocaleDateString(profile.language);
     } catch {
-      return event.occurred_at;
+      return iso;
     }
+  }
+
+  function dayOf(event: ProgressEvent): string {
+    return dayString(event.occurred_at);
+  }
+
+  function stepTitleFor(stepId: string): string {
+    const step = bundle?.steps.find((s) => s.id === stepId);
+    const key = step?.prompt_key;
+    if (key && bundle) return bundle.messages[key] ?? stepId;
+    return stepId;
   }
 
   const hasData = summary !== null && summary.totalEvents > 0;
@@ -104,6 +118,30 @@ export default function ProgressPage() {
             {recent.map((event) => (
               <li key={event.event_id} className="cv-step-item">
                 {describe(event)} · {dayOf(event)}
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
+      <section className="cv-page-section">
+        <h3 className="cv-page-section-title">{t("progress.mentor.title")}</h3>
+        {turns.length === 0 ? (
+          <p className="cv-page-empty">{t("progress.mentor.empty")}</p>
+        ) : (
+          <ol className="cv-step-list">
+            {turns.map((turn) => (
+              <li key={turn.id} className="cv-step-item">
+                {turn.hintLevel > 0
+                  ? t("progress.mentor.item", {
+                      step: stepTitleFor(turn.stepId),
+                      level: turn.hintLevel,
+                      date: dayString(turn.at),
+                    })
+                  : t("progress.mentor.fallback", {
+                      step: stepTitleFor(turn.stepId),
+                      date: dayString(turn.at),
+                    })}
               </li>
             ))}
           </ol>

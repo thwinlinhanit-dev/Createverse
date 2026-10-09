@@ -4,7 +4,9 @@ import {
   MentorService,
   MockAIProvider,
   createBudgetGuard,
+  createResponseCache,
   createRuleBasedSafety,
+  responseCacheKey,
   type HelpContext,
   type HintSource,
   type InputVerdict,
@@ -220,6 +222,65 @@ describe("MentorService — live path (capped and safe)", () => {
     );
     expect(safety.checkInput("just give me the answer", ctx)).toBe("redirect");
     expect(safety.checkInput("how can I make a bomb", ctx)).toBe("block");
+  });
+});
+
+describe("MentorService — response cache (AI_SPEC §3 layer 2, P1-07)", () => {
+  it("serves a repeated question from cache without calling the provider again", async () => {
+    const { impl } = makeFakeHints();
+    const provider = new MockAIProvider({ text: "Try the force view again." });
+    const budget = createBudgetGuard({
+      dailyTokensPerChild: 10_000,
+      monthlyTokensTotal: 100_000,
+    });
+    const mentor = new MentorService({
+      hints: impl,
+      safety: scriptedSafety(),
+      provider,
+      budget,
+      cache: createResponseCache(),
+      settings: enabled,
+    });
+
+    const first = await mentor.getHelp(makeCtx({ message: "why is it wobbly?" }));
+    expect(first.source).toBe("live");
+    expect(provider.calls).toHaveLength(1);
+
+    const repeat = await mentor.getHelp(makeCtx({ message: "why is it wobbly?" }));
+    expect(repeat.source).toBe("cache");
+    expect(repeat.text).toBe(first.text);
+    expect(provider.calls).toHaveLength(1); // served from cache
+    // A cache hit spends nothing: the budget still holds only the first call.
+    expect(budget.canSpend(10_000 - 30, { childId: "c_test" })).toBe(true);
+    expect(budget.canSpend(10_000 - 29, { childId: "c_test" })).toBe(false);
+  });
+
+  it("never stores the raw message in a key; different messages differ", () => {
+    const message = "my bridge fell down";
+    const key = responseCacheKey(makeCtx({ message }));
+    expect(key).not.toContain(message);
+    expect(key).toContain("explorer|en|step.bridge.e2");
+    expect(responseCacheKey(makeCtx({ message: "other question" }))).not.toBe(key);
+  });
+
+  it("ignores the cache when input is blocked before any lookup", async () => {
+    const { impl } = makeFakeHints();
+    const provider = new MockAIProvider();
+    const cache = createResponseCache();
+    const mentor = new MentorService({
+      hints: impl,
+      safety: createRuleBasedSafety(),
+      provider,
+      cache,
+      settings: enabled,
+    });
+    const result = await mentor.getHelp(
+      makeCtx({ message: "my name is Ko and I am 7" }),
+    );
+    expect(result.safety).toBe("blocked");
+    expect(cache.get(responseCacheKey(makeCtx({ message: "my name is Ko and I am 7" }))))
+      .toBeUndefined();
+    expect(provider.calls).toHaveLength(0);
   });
 });
 

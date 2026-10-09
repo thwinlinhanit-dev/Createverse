@@ -50,6 +50,9 @@ importers:
 
   apps/app:
     dependencies:
+      '@createverse/ai-core':
+        specifier: workspace:*
+        version: link:../../packages/ai-core
       '@createverse/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens

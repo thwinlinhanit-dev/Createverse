@@ -9,6 +9,7 @@ import type {
   ProjectInstanceRecord,
   SavedLabDesign,
 } from "../../progress/store.ts";
+import { createMentor, logMentorTurn } from "../../mentor/index.ts";
 import BridgeLab, { type LabRunResult } from "../../runner/BridgeLab.tsx";
 import { HintPanel } from "../../runner/HintPanel.tsx";
 import { ReadAloudButton } from "../../runner/ReadAloud.tsx";
@@ -371,10 +372,43 @@ export default function StepRunnerPage() {
             levelReached: hintProgress.levelReached,
             attemptCount: hintProgress.attemptCount,
           }}
-          onHint={(level) => {
-            void activeStore
-              .recordHint(activeStep.id, level)
-              .then(() => setHintTick((n) => n + 1));
+          onHint={() => {
+            // P1-07: every hint request goes through MentorService — content
+            // ladder + safety pipeline + parent/kill-switch/stage/budget gates.
+            // Phase 1 has no provider configured, so this stays fully offline.
+            const mentor = createMentor({
+              stage,
+              ladderFor: (stepId) => {
+                const target = bundle.steps.find((s) => s.id === stepId);
+                return target?.hint_ladder
+                  ? bundle.ladders.find((l) => l.id === target.hint_ladder)
+                  : undefined;
+              },
+            });
+            void mentor
+              .getHelp({
+                childId: profile.id,
+                stage,
+                locale: profile.language,
+                stepId: activeStep.id,
+                hintLevelReached: hintProgress.levelReached,
+                // Lab runs feed the solution gate (AI_SPEC: attempts on the step).
+                attemptCount: boot.attempt?.iterations ?? hintProgress.attemptCount,
+              })
+              .then(async (result) => {
+                if (result.hintLevel !== undefined) {
+                  await activeStore.recordHint(activeStep.id, result.hintLevel);
+                }
+                // Parent-visible transcript: ids and enums only (DATA_MODEL §6).
+                logMentorTurn(profile.id, {
+                  at: new Date().toISOString(),
+                  stepId: activeStep.id,
+                  hintLevel: result.hintLevel ?? 0,
+                  source: result.source,
+                  safety: result.safety,
+                });
+                setHintTick((n) => n + 1);
+              });
           }}
         />
       ) : null}
