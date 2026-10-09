@@ -1,6 +1,6 @@
 # CURRENT_STATE
 
-Updated: 2026-10-08 by Muse Spark (agent)
+Updated: 2026-10-09 by Buffy (agent)
 Phase: 1 started — Phase 0 tasks that need no owner input are DONE
 
 ## Done
@@ -23,15 +23,17 @@ Phase: 1 started — Phase 0 tasks that need no owner input are DONE
 - **P1-02 Localization foundation — DONE (2026-10-08).** `packages/i18n`: ~160-key ICU catalogs (en source of truth; zh-Hant type-checked against `MessageKey`), `createTranslator` with ICU plural/select via `intl-messageformat`, en fallback. App: `useT()` binds locale to the child profile (only locale source, ADR-0008); every shell surface (header/nav, gate, 10 pages, fallbacks) renders `t("key")`. Lint rule `cv/no-raw-text` blocks raw strings in all `.tsx` (proven: `npx eslint` exits 1 on a raw-string probe). 21 new tests: catalog parity/ICU/fallback (11), rule fixtures (7), locale-switch render of the whole shell (3). `pnpm check` green (181 tests).
 - **P1-03 app shell — PARTIAL (2026-10-08): shell DONE, device install PENDING.** `apps/app` React+Vite PWA (ADR-0002): route-guarded child (Home/Explore/Create/Projects/Me) + parent (Overview/Progress/Portfolio/Safety/Settings) areas behind a dialog-semantics parent gate; installable (manifest + generated icons); offline shell verified against the production build with the server killed (`sw.js` v2 precaches shell + referenced assets, `ignoreVary` for same-origin); `data-stage` presets switch live; full en + zh-Hant incl. nav labels; nav = fixed bottom bar <600 px / bar under header ≥600 px; token-only shell CSS; `user-scalable=no` removed (200 % text scaling); `aria-current` on the active nav item; icons render as real inline SVG. `pnpm dev` runs it at http://127.0.0.1:5173. Remaining: install on the real phone/tablet; Playwright viewport suite (verified locally with agent-browser at 390 px + 1280 px).
 
+- **P1-06 Skill evidence v0 — DONE (2026-10-09).** `packages/learning-core/src/evidenceReplay.ts` `replayEvidence()` deterministically replays the append-only event log into id-sorted skill-evidence and concept-progress rows (invariant 3): activity outcomes → §2.5-magnitude skill strengths per tagged skill (0.6/0.3/0.1, skipped = none), step type → concept levels per §5 (intro/learn seen → activity practiced → experiment/challenge success demonstrated → reflection explained via content assessment signals `experience.success`/`iterations>=2`/`reflection.complete`), `child.skill.updated` → delta; rows use the existing decayed-weighted-sum skill levels. `ProgressStore.skillEvidence()` is the derived read (content levels/assessments passed in by the caller); `finishAttempt` now emits `step_type` and `StepRunner` passes `step.type`; `Me.tsx` chips read evidence rows — no numeric levels in child UI (PRODUCT_SPEC §Me "No levels or points"). 8 new replay tests + 3 store tests; `pnpm check` green (223 tests).
+
 ## In progress
-- (nothing open — session ends at a green `pnpm check`: 212 tests + content validation)
+- (nothing open — session ends at a green `pnpm check`: 223 tests + content validation)
 
 ## Next up (ordered)
-1. **P1-06** — Skill evidence v0 (use `learning-core` derivations; evidence rebuilt by event replay; DATA_MODEL invariant 3; depends on P1-05).
-2. P0-07 device run — Junior bridge on the real phone/tablet (30 fps floor); record in `docs/architecture/RUNTIME_SPIKE.md`.
-3. P0-09 on-platform step — owner approves a Cloudflare account; deploy spike Worker, real passkey ceremony against the new `backend/`, `wrangler tail` CPU numbers → ADR-0003 addendum.
-4. P0-02 closure — owner review of every Draft v0.1 document (incl. the two new docs above).
-5. P0-10 closure — owner scope check of `TASKS_PHASE_2_7.md`.
+1. **P0-07 device run** — Junior bridge on the real phone/tablet (30 fps floor); record in `docs/architecture/RUNTIME_SPIKE.md`.
+2. **P0-09 on-platform step** — owner approves a Cloudflare account; deploy spike Worker, real passkey ceremony against the new `backend/`, `wrangler tail` CPU numbers → ADR-0003 addendum.
+3. **P0-02 closure** — owner review of every Draft v0.1 document (incl. the two new docs above).
+4. **P0-10 closure** — owner scope check of `TASKS_PHASE_2_7.md`.
+5. **P1-07** — AI mentor service (hint ladder + safety pipeline; live AI stays off until approved).
 
 ## Blocked / waiting on owner
 - QUESTION: Which live AI provider and what monthly/per-child caps? (AI_SPEC §16; default = no live AI in Phase 1.)

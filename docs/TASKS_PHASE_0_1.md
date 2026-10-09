@@ -144,12 +144,13 @@ TEST PLAN: kill the app mid-step and resume; events asserted append-only.
 ACCEPTANCE CRITERIA: a project can be paused and resumed without data loss; events are append-only.
 DEPENDENCIES: P1-04.
 
-## P1-06 — Skill evidence v0 — **TODO**
+## P1-06 — Skill evidence v0 — **DONE**
 
 GOAL: Tag-based skills with evidence events (no graph reasoning yet).
 REQUIREMENTS: use `learning-core` derivations; evidence rows rebuilt by replaying events (DATA_MODEL invariant 3).
-TEST PLAN: replay fixture events and compare derived rows.
-ACCEPTANCE CRITERIA: completing activities updates skill evidence deterministically.
+DONE: `packages/learning-core/src/evidenceReplay.ts` — `replayEvidence(events, {nowMs, levelsBySkill, assessments, halfLifeDays})` replays the log in `occurred_at` order (insertion breaks ties) and emits id-sorted `SkillEvidenceRow`/`ConceptProgressRow` sets: activity outcomes contribute §2.5-magnitude skill strengths (success 0.6 / partial 0.3 / failed 0.1 / skipped nothing) for each tagged skill; step type maps concepts per §5 (intro/learn → seen, activity → practiced, experiment/challenge success → demonstrated); experiment/reflection signals (`experience.success`, `iterations>=2`, `reflection.complete`) resolve through content assessments (the shipped `assess.bridge.e2`); `child.skill.updated` applies its delta; level = decayed weighted sum → configured `levels` via existing `skillEvidence.ts`. Exported from `learning-core` index. `ProgressStore.skillEvidence()` derives rows from the event log (content passed in by the caller); `finishAttempt` records `step_type` (StepRunner passes `step.type`) so replay needs no side tables; `Me.tsx` chips now read evidence rows (child UI shows no numeric levels — PRODUCT_SPEC §Me "No levels or points").
+TEST PLAN: replay fixture events and compare derived rows — `evidenceReplay.test.ts` (8 tests: §2.5 fixture rows, determinism, storage-order independence, half-life decay, graph level mapping, unknown/malformed events, legacy no-`step_type` events) + 3 store tests.
+ACCEPTANCE CRITERIA: completing activities updates skill evidence deterministically — `store.test.ts` pins exact rows after `finishAttempt`, step-type concept mapping, and identical rows after a reload.
 DEPENDENCIES: P1-05.
 
 ## P1-07 — AI mentor service — **TODO**

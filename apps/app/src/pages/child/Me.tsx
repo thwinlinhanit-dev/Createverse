@@ -5,9 +5,11 @@ import { useBundle } from "../../content/useBundle.ts";
 import { useProgressStore } from "../../progress/useProgress.ts";
 
 /**
- * Me: real growth evidence from the on-device store (P1-05).
- * Practiced skills resolve to their bundle names; portfolio entries show
- * finished work. Empty states keep the shipped copy until the child builds.
+ * Me: real growth evidence from the on-device store (P1-05, P1-06).
+ * Chips are driven by the skill-evidence rows replayed from the event log
+ * (invariant 3), so every finished step shows up as growing evidence.
+ * Product spec: "No levels or points" — evidence counts are shown as named
+ * skills only; numeric levels stay in the data model for the parent view.
  */
 export default function MePage() {
   const { profile, navigateTo } = useApp();
@@ -17,6 +19,7 @@ export default function MePage() {
   const { store, ready } = useProgressStore(profile.id);
 
   const summary = ready && store ? store.summary() : null;
+  const evidence = ready && store ? store.skillEvidence() : null;
   const entries = ready && store ? store.getPortfolio() : [];
 
   function skillName(id: string): string {
@@ -26,9 +29,15 @@ export default function MePage() {
     return id;
   }
 
-  const realSkills = summary && summary.skillsPracticed.length > 0
-    ? summary.skillsPracticed.map(skillName)
-    : null;
+  const evidenceSkills =
+    evidence && evidence.skills.length > 0
+      ? evidence.skills.map((row) => skillName(row.skillId))
+      : null;
+  const summarySkills =
+    summary && summary.skillsPracticed.length > 0
+      ? summary.skillsPracticed.map(skillName)
+      : null;
+  const realSkills = evidenceSkills ?? summarySkills;
   const staticSkills = [t("me.skill.test"), t("me.skill.planks"), t("me.skill.explain")];
 
   // Preserves the shipped copy: en labels the card "Stage", zh labels it with

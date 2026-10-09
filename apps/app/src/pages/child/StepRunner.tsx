@@ -182,6 +182,9 @@ export default function StepRunnerPage() {
       concepts: [...step.concepts],
       skills: [...step.skills],
       content: { id: step.id, version: step.version },
+      // Step type drives concept levels on replay (P1-06, DATA_MODEL §5):
+      // intro/learn = seen, activity = practiced, experiment/challenge = demonstrated.
+      stepType: step.type,
     });
     advance();
   }

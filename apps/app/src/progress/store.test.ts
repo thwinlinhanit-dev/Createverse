@@ -261,6 +261,72 @@ describe("hints, experiments, reflection, portfolio", () => {
   });
 });
 
+describe("skill evidence (P1-06, invariant 3)", () => {
+  const NOW = 1_700_000_000_000;
+  const ISO = new Date(NOW).toISOString();
+
+  async function completedStep(store: ProgressStore, stepType: string): Promise<void> {
+    const { instance } = await store.startProject("project.bridge", "junior", 1, [
+      "step.bridge.j1",
+    ]);
+    const attempt = await store.beginAttempt(instance.id, "step.bridge.j1");
+    await store.finishAttempt(attempt.id, "success", {
+      hintsUsed: 0,
+      iterations: 2,
+      concepts: ["concept.load"],
+      skills: ["skill.experimentation"],
+      content: { id: "step.bridge.j1", version: 1 },
+      stepType,
+    });
+  }
+
+  it("updates skill evidence deterministically when an activity completes", async () => {
+    const store = await openStore();
+    await completedStep(store, "experiment");
+
+    const rows = store.skillEvidence({ nowMs: NOW });
+    expect(rows.skills).toEqual([
+      {
+        skillId: "skill.experimentation",
+        evidenceCount: 1,
+        strengthTotal: 0.6,
+        weightedSum: 0.6,
+        level: 0, // 0.6 < the level-1 threshold; two successes reach level 1
+        lastSeenAt: ISO,
+      },
+    ]);
+    expect(rows.concepts).toEqual([
+      { conceptId: "concept.load", level: 3, evidenceCount: 1, lastSeenAt: ISO },
+    ]);
+    // Replaying the same log with the same clock yields identical rows.
+    expect(store.skillEvidence({ nowMs: NOW })).toEqual(rows);
+  });
+
+  it("maps step types to concept levels per DATA_MODEL §5", async () => {
+    const store = await openStore();
+    await completedStep(store, "intro");
+    const intro = store.skillEvidence({ nowMs: NOW });
+    expect(intro.concepts[0]?.level).toBe(1); // seen
+
+    const activityStore = await openStore();
+    await completedStep(activityStore, "activity");
+    expect(activityStore.skillEvidence({ nowMs: NOW }).concepts[0]?.level).toBe(2); // practiced
+  });
+
+  it("rebuilds the same rows after a reload (events are the source of truth)", async () => {
+    const backend = memoryBackend();
+    const first = await openStore(backend);
+    await completedStep(first, "experiment");
+
+    const reloaded = new ProgressStore(CHILD, DEVICE, backend, { newId: testIds() });
+    await reloaded.load();
+    expect(reloaded.skillEvidence({ nowMs: NOW })).toEqual(
+      first.skillEvidence({ nowMs: NOW }),
+    );
+    expect(reloaded.summary().skillsPracticed).toEqual(["skill.experimentation"]);
+  });
+});
+
 describe("lab design persistence (reload resumes the design)", () => {
   const design = {
     specId: "exp.bridge.j",

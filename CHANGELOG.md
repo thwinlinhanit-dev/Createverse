@@ -2,6 +2,11 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/). Every task adds an entry here.
 
+## [Unreleased] — 2026-10-09
+
+### Added
+- **P1-06 Skill evidence v0 — DONE:** `packages/learning-core/src/evidenceReplay.ts` — `replayEvidence(events, {nowMs, levelsBySkill, assessments, halfLifeDays})` deterministically rebuilds `SkillEvidenceRow` / `ConceptProgressRow` sets by replaying the append-only event log in `occurred_at` order (rows emitted sorted by id; DATA_MODEL invariant 3). Activity completions contribute §2.5-magnitude skill strengths per tagged skill (success 0.6 / partial 0.3 / failed 0.1 / skipped none) and map concepts by step type (intro/learn → seen, activity → practiced, experiment/challenge success → demonstrated); experiment/reflection signals (`experience.success`, `iterations>=2`, `reflection.complete`) resolve through content assessments (shipped `assess.bridge.e2`); `child.skill.updated` applies its delta; levels use the existing decayed weighted sum mapped to the skill's configured `levels`. App wiring: `ProgressStore.skillEvidence()` derived read over the event log, `finishAttempt` now records `step_type` (`StepRunner` passes `step.type`), `Me.tsx` chips read evidence rows — no numeric levels shown to the child (PRODUCT_SPEC §Me "No levels or points"). Tests: 8 replay tests (fixture §2.5 rows, determinism, storage-order independence, half-life decay, graph level mapping, malformed/legacy events) + 3 store tests (exact rows after completion, step-type mapping, reload reproduces rows) — repo total 223, `pnpm check` green.
+
 ## [Unreleased] — 2026-10-08
 
 ### Added

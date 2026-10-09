@@ -2,6 +2,7 @@ import {
   ProgressEventSchema,
   type ProgressEvent,
 } from "@createverse/shared-types";
+import { replayEvidence, type EvidenceReplay, type ReplayOptions } from "@createverse/learning-core";
 
 /**
  * Local-first progress store (P1-05 project state, P1-08 event log client).
@@ -456,6 +457,9 @@ export class ProgressStore {
       readonly concepts: readonly string[];
       readonly skills: readonly string[];
       readonly content: ContentRef;
+      /** Step type (intro|activity|learn|experiment|challenge) so concept
+       * levels map per DATA_MODEL §5 on replay; optional for legacy callers. */
+      readonly stepType?: string;
     },
   ): Promise<ActivityAttemptRecord> {
     this.ensureLoaded();
@@ -477,6 +481,7 @@ export class ProgressStore {
         iterations: detail.iterations,
         concepts: [...detail.concepts],
         skills: [...detail.skills],
+        ...(detail.stepType !== undefined ? { step_type: detail.stepType } : {}),
       },
       detail.content,
     );
@@ -629,6 +634,21 @@ export class ProgressStore {
   }
 
   // ---- derived read model (replay over events; invariant 3) ---------------
+
+  /**
+   * Skill-evidence and concept-progress rows, rebuilt by replaying the
+   * append-only event log (P1-06, DATA_MODEL invariant 3). Deterministic:
+   * same events + same clock + same content options → identical rows.
+   * Content (configured levels, assessments) is passed in by the caller
+   * because the store never holds content itself.
+   */
+  skillEvidence(
+    options: Omit<ReplayOptions, "nowMs"> & { readonly nowMs?: number } = {},
+  ): EvidenceReplay {
+    this.ensureLoaded();
+    const { nowMs, ...content } = options;
+    return replayEvidence(this.events, { ...content, nowMs: nowMs ?? this.now() });
+  }
 
   summary(): ProgressSummary {
     this.ensureLoaded();
