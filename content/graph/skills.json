@@ -4,5 +4,11 @@
     "version": 1,
     "name_key": "skill.experimentation.name",
     "levels": 5
+  },
+  {
+    "id": "skill.explanation",
+    "version": 1,
+    "name_key": "skill.explanation.name",
+    "levels": 5
   }
 ]

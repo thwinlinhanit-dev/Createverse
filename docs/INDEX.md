@@ -61,6 +61,6 @@ Every document listed here lives in `docs/` unless noted.
 
 ## Still open (referenced by docs, not yet written)
 
-- `BUILD_A_BRIDGE_CONTENT.md` — draft content pack (task P1-15).
+- `content/README.md` — the Build a Bridge content pack: layout, validation rules, five-step lane arc, glossary and review status (task P1-15).
 - `docs/product/LANGUAGE_STYLE.md` — Traditional Chinese variety/style decisions (required by SAFETY.md §13).
 - `docs/operations/` — RECOVERY.md, incident records (tasks P1-19, P0-05 follow-ups).

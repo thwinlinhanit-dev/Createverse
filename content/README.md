@@ -48,4 +48,11 @@ content/
 
 The `safety.*` fallback keys used by `ai-core` (`safety.ask_grownup`, `safety.private_info`, ...) belong to the app's UI catalog (task P1-02), not to this content pack.
 
-Lane step counts here are a **skeleton** (2 steps per lane). Task P1-15 expands each lane to the full Build a Bridge project.
+Each lane follows the five-step Build a Bridge arc from master spec §11.5
+(P1-15): **Predict/Look → Build → Test → Change → Explain/report**, mapped to
+step types (`intro`/`learn` for the thinking steps, `activity`/`experiment`/
+`challenge` for the bridge-lab steps, `reflection` for the closing report) and
+backed by a five-rung hint ladder per step (ask → hint → smaller hint →
+demonstrate → explain; Phase 1 ships no `solution` rung). Every step carries a
+`parent_notes_key`; the notes point to the real-world paper-and-tape version
+(gap sizes per stage, coins with a grown-up, ruler) from master spec §11.3–§11.4.

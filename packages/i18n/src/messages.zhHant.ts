@@ -20,7 +20,7 @@ export const zhHant: Record<MessageKey, string> = {
 
   // ---- project (shared demo copy) ---------------------------------------
   "project.bridge.title": "蓋一座橋",
-  "project.bridge.body": "把木板拼起來，讓玩具車順利通過。",
+  "project.bridge.body": "把木板拼起來，讓小車順利通過。",
   "project.bridge.body.simple": "接好木板，讓小車通過。",
 
   // ---- layout / header ---------------------------------------------------
@@ -70,7 +70,7 @@ export const zhHant: Record<MessageKey, string> = {
   "home.lead.simple": "繼續，或開始新的。",
   "home.continue.title": "繼續",
   "home.challenge.title": "今天的挑戰",
-  "home.challenge.body": "做一座能讓玩具車撐住 8 秒的橋。",
+  "home.challenge.body": "做一座能讓小車撐住 8 秒的橋。",
   "home.challenge.cta": "試試這個挑戰",
   "home.recent.title": "最近的創作",
   "home.recent.bridge": "橋",
@@ -84,7 +84,7 @@ export const zhHant: Record<MessageKey, string> = {
   "explore.start": "開始",
   "explore.story": "看故事",
   "explore.build.title": "你能建造什麼",
-  "explore.build.car": "一座給玩具車的橋",
+  "explore.build.car": "一座給小車的橋",
   "explore.build.strong": "一座更強的橋",
   "explore.build.tune": "一座帶聲音的橋",
   "explore.empty": "更多專案會隨著你成長而登場。先從「蓋一座橋」開始。",

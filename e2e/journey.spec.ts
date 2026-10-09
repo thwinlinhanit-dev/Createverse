@@ -9,9 +9,11 @@
  *  - Maker stage: its experience is the one that ships `test_log`, so each
  *    lab run appends `lab-log-N` — the sync point between the three runs
  *    (no fixed sleeps, TESTING.md §8 hygiene).
- *  - The no-pressure move-on path (SAFETY.md §9) finishes the lane after
+ *  - The no-pressure move-on path (SAFETY.md §9) finishes each lab step after
  *    three failed tests instead of requiring a solved bridge — the sanctioned
- *    route a real child takes when the physics does not cooperate.
+ *    route a real child takes when the physics does not cooperate. P1-15
+ *    expanded the lane to five steps (learn → build → test → change →
+ *    report), so the walk crosses three lab steps before reflection.
  *  - Reload mid-lane proves the position survives a fresh page load; stage
  *    and language are re-applied afterwards because the profile itself is
  *    still the shell placeholder until the app identity/profile client
@@ -27,8 +29,7 @@ interface Copy {
   stageMaker: string;
   start: string;
   detailStart: string;
-  stepOf1: string;
-  stepOf2: string;
+  stepOf: (n: number) => string;
   finishStep: string;
   hintButton: string;
   hint1: string;
@@ -46,8 +47,7 @@ const COPY: Record<"en" | "zh-Hant", Copy> = {
     stageMaker: "Maker (8–10)",
     start: "Start",
     detailStart: "Start building",
-    stepOf1: "Step 1 of 2",
-    stepOf2: "Step 2 of 2",
+    stepOf: (n) => `Step ${n} of 5`,
     finishStep: "I finished this step",
     hintButton: "Get hint 1",
     hint1: "Hint 1",
@@ -63,8 +63,7 @@ const COPY: Record<"en" | "zh-Hant", Copy> = {
     stageMaker: "創作者（8–10 歲）",
     start: "開始",
     detailStart: "開始蓋",
-    stepOf1: "第 1 步，共 2 步",
-    stepOf2: "第 2 步，共 2 步",
+    stepOf: (n) => `第 ${n} 步，共 5 步`,
     finishStep: "我完成這一步了",
     hintButton: "拿第 1 個提示",
     hint1: "提示 1",
@@ -108,15 +107,16 @@ for (const lang of ["en", "zh-Hant"] as const) {
     await expect(page).toHaveURL(/#project$/);
     await page.getByRole("button", { name: copy.detailStart }).click();
     await expect(page).toHaveURL(/#project\/step$/);
-    await expect(page.getByRole("progressbar", { name: copy.stepOf1 })).toBeVisible();
+    await expect(page.getByRole("progressbar", { name: copy.stepOf(1) })).toBeVisible();
 
     // AI hint: MentorService with live AI off → pre-written ladder level 1.
     await page.getByRole("button", { name: copy.hintButton }).click();
     await expect(page.getByText(copy.hint1).first()).toBeVisible();
 
-    // Finish step 1 → the lab step.
+    // Finish step 1 (learn) → the first lab step. P1-15: five-step lane —
+    // build, test and change are the lab steps 2–4, the report is step 5.
     await page.getByRole("button", { name: copy.finishStep }).click();
-    await expect(page.getByRole("progressbar", { name: copy.stepOf2 })).toBeVisible();
+    await expect(page.getByRole("progressbar", { name: copy.stepOf(2) })).toBeVisible();
 
     // Progress saved: a fresh page load resumes at step 2. Stage and language
     // live on the placeholder profile only (P1-18), so re-apply them.
@@ -125,17 +125,26 @@ for (const lang of ["en", "zh-Hant"] as const) {
     await openSettings(page, copy);
     await page.getByRole("button", { name: copy.stageMaker }).click();
     await page.goto("/#project/step");
-    await expect(page.getByRole("progressbar", { name: copy.stepOf2 })).toBeVisible();
+    await expect(page.getByRole("progressbar", { name: copy.stepOf(2) })).toBeVisible();
 
-    // Activity: three failed tests (empty design) → the no-pressure move-on.
-    // Each run appends lab-log-N (1-based); waiting on it makes the loop
-    // deterministic.
-    const testButton = page.getByRole("button", { name: copy.testGo });
-    for (let run = 1; run <= 3; run += 1) {
-      await testButton.click();
-      await expect(page.getByTestId(`lab-log-${run}`)).toBeVisible();
+    // Lab steps 2–4: three failed tests each (empty design) → the no-pressure
+    // move-on. Each run appends lab-log-N (1-based, restarting per step), so
+    // waiting on it makes the loop deterministic.
+    for (let step = 2; step <= 4; step += 1) {
+      if (step > 2) {
+        await expect(page.getByRole("progressbar", { name: copy.stepOf(step) })).toBeVisible();
+      }
+      const testButton = page.getByRole("button", { name: copy.testGo });
+      for (let run = 1; run <= 3; run += 1) {
+        await testButton.click();
+        await expect(page.getByTestId(`lab-log-${run}`)).toBeVisible();
+      }
+      await page.getByRole("button", { name: copy.moveOn }).click();
     }
-    await page.getByRole("button", { name: copy.moveOn }).click();
+
+    // Step 5 (report): finish it to reach reflection.
+    await expect(page.getByRole("progressbar", { name: copy.stepOf(5) })).toBeVisible();
+    await page.getByRole("button", { name: copy.finishStep }).click();
 
     // Reflect (both prompts; Maker also shows the optional text fields).
     await page.getByTestId("reflect-done-0").click();

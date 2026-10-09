@@ -6,7 +6,8 @@
     "prompt_key": "step.bridge.j1.prompt",
     "concepts": ["concept.force"],
     "skills": [],
-    "hint_ladder": "hints.bridge.j1"
+    "hint_ladder": "hints.bridge.j1",
+    "parent_notes_key": "step.bridge.j1.parent"
   },
   {
     "id": "step.bridge.j2",
@@ -16,8 +17,43 @@
     "concepts": ["concept.force"],
     "skills": ["skill.experimentation"],
     "experience_ref": "exp.bridge.j",
-    "hint_ladder": "hints.bridge.j2"
+    "hint_ladder": "hints.bridge.j2",
+    "parent_notes_key": "step.bridge.j2.parent"
   },
+  {
+    "id": "step.bridge.j3",
+    "version": 1,
+    "type": "experiment",
+    "prompt_key": "step.bridge.j3.prompt",
+    "concepts": ["concept.force"],
+    "skills": ["skill.experimentation"],
+    "experience_ref": "exp.bridge.j",
+    "hint_ladder": "hints.bridge.j3",
+    "assessment": "assess.bridge.j3",
+    "parent_notes_key": "step.bridge.j3.parent"
+  },
+  {
+    "id": "step.bridge.j4",
+    "version": 1,
+    "type": "experiment",
+    "prompt_key": "step.bridge.j4.prompt",
+    "concepts": ["concept.structure"],
+    "skills": ["skill.experimentation"],
+    "experience_ref": "exp.bridge.j",
+    "hint_ladder": "hints.bridge.j4",
+    "parent_notes_key": "step.bridge.j4.parent"
+  },
+  {
+    "id": "step.bridge.j5",
+    "version": 1,
+    "type": "learn",
+    "prompt_key": "step.bridge.j5.prompt",
+    "concepts": ["concept.structure"],
+    "skills": [],
+    "hint_ladder": "hints.bridge.j5",
+    "parent_notes_key": "step.bridge.j5.parent"
+  },
+
   {
     "id": "step.bridge.e1",
     "version": 1,
@@ -25,19 +61,54 @@
     "prompt_key": "step.bridge.e1.prompt",
     "concepts": ["concept.load"],
     "skills": [],
-    "hint_ladder": "hints.bridge.e1"
+    "hint_ladder": "hints.bridge.e1",
+    "parent_notes_key": "step.bridge.e1.parent"
   },
   {
     "id": "step.bridge.e2",
     "version": 1,
-    "type": "experiment",
+    "type": "activity",
     "prompt_key": "step.bridge.e2.prompt",
-    "concepts": ["concept.load", "concept.structure"],
+    "concepts": ["concept.load"],
     "skills": ["skill.experimentation"],
     "experience_ref": "exp.bridge.e",
     "hint_ladder": "hints.bridge.e2",
-    "assessment": "assess.bridge.e2"
+    "assessment": "assess.bridge.e2",
+    "parent_notes_key": "step.bridge.e2.parent"
   },
+  {
+    "id": "step.bridge.e3",
+    "version": 1,
+    "type": "experiment",
+    "prompt_key": "step.bridge.e3.prompt",
+    "concepts": ["concept.load"],
+    "skills": ["skill.experimentation"],
+    "experience_ref": "exp.bridge.e",
+    "hint_ladder": "hints.bridge.e3",
+    "parent_notes_key": "step.bridge.e3.parent"
+  },
+  {
+    "id": "step.bridge.e4",
+    "version": 1,
+    "type": "experiment",
+    "prompt_key": "step.bridge.e4.prompt",
+    "concepts": ["concept.structure"],
+    "skills": ["skill.experimentation"],
+    "experience_ref": "exp.bridge.e",
+    "hint_ladder": "hints.bridge.e4",
+    "parent_notes_key": "step.bridge.e4.parent"
+  },
+  {
+    "id": "step.bridge.e5",
+    "version": 1,
+    "type": "reflection",
+    "prompt_key": "step.bridge.e5.prompt",
+    "concepts": ["concept.load"],
+    "skills": ["skill.explanation"],
+    "hint_ladder": "hints.bridge.e5",
+    "parent_notes_key": "step.bridge.e5.parent"
+  },
+
   {
     "id": "step.bridge.m1",
     "version": 1,
@@ -45,16 +116,51 @@
     "prompt_key": "step.bridge.m1.prompt",
     "concepts": ["concept.structure"],
     "skills": [],
-    "hint_ladder": "hints.bridge.m1"
+    "hint_ladder": "hints.bridge.m1",
+    "parent_notes_key": "step.bridge.m1.parent"
   },
   {
     "id": "step.bridge.m2",
     "version": 1,
-    "type": "challenge",
+    "type": "activity",
     "prompt_key": "step.bridge.m2.prompt",
-    "concepts": ["concept.structure", "concept.load"],
+    "concepts": ["concept.structure"],
     "skills": ["skill.experimentation"],
     "experience_ref": "exp.bridge.m",
-    "hint_ladder": "hints.bridge.m2"
+    "hint_ladder": "hints.bridge.m2",
+    "parent_notes_key": "step.bridge.m2.parent"
+  },
+  {
+    "id": "step.bridge.m3",
+    "version": 1,
+    "type": "experiment",
+    "prompt_key": "step.bridge.m3.prompt",
+    "concepts": ["concept.load"],
+    "skills": ["skill.experimentation"],
+    "experience_ref": "exp.bridge.m",
+    "hint_ladder": "hints.bridge.m3",
+    "assessment": "assess.bridge.m3",
+    "parent_notes_key": "step.bridge.m3.parent"
+  },
+  {
+    "id": "step.bridge.m4",
+    "version": 1,
+    "type": "challenge",
+    "prompt_key": "step.bridge.m4.prompt",
+    "concepts": ["concept.structure"],
+    "skills": ["skill.experimentation"],
+    "experience_ref": "exp.bridge.m",
+    "hint_ladder": "hints.bridge.m4",
+    "parent_notes_key": "step.bridge.m4.parent"
+  },
+  {
+    "id": "step.bridge.m5",
+    "version": 1,
+    "type": "reflection",
+    "prompt_key": "step.bridge.m5.prompt",
+    "concepts": ["concept.load"],
+    "skills": ["skill.explanation"],
+    "hint_ladder": "hints.bridge.m5",
+    "parent_notes_key": "step.bridge.m5.parent"
   }
 ]

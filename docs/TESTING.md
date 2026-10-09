@@ -186,7 +186,7 @@ Test hygiene: stable `data-testid` attributes, no fixed sleeps (wait on conditio
 `pnpm test:e2e` runs the Playwright suites against the real dev server **and** the real API (`backend/src/serve.ts --e2e`, started automatically); CI runs it as the `e2e` job after `pnpm check`:
 
 - `e2e/auth.spec.ts` (section 8, smoke 1) — the full passkey ceremony on a virtual WebAuthn authenticator: bootstrap → register → login → device + child → child session.
-- `e2e/journey.spec.ts` (section 8, smoke 2 + goal journey) — phone and tablet viewports × en + zh-Hant: live AI off, project start, ladder hint, reload persistence, three runs → move-on → reflect → portfolio, and a raw-key leak scan.
+- `e2e/journey.spec.ts` (section 8, smoke 2 + goal journey) — phone and tablet viewports × en + zh-Hant: live AI off, project start, ladder hint, reload persistence, the full five-step Maker lane (lab steps 2–4: three runs → move-on each), report → reflect → portfolio, and a raw-key leak scan.
 
 - axe (WCAG 2.1 A + AA) — seven key child screens in en + zh-Hant, parent gate + all five parent screens, home + step runner under all three stage presets, simple-language mode in both locales.
 - keyboard-only bridge placement (canvas wrap focus → Arrow keys → Enter → piece placed and announced), the 3px focus ring on first Tab, and the never-color-only rule (force-view written legend, icon + words on failed runs).

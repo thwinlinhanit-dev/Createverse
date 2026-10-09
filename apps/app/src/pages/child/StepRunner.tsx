@@ -41,6 +41,18 @@ export function setLabModeForTests(mode: LabMode | null): void {
 interface Boot {
   readonly instance: ProjectInstanceRecord;
   readonly attempt: ActivityAttemptRecord | null;
+  /**
+   * The position this boot belongs to. `step` renders from the requested
+   * stepId while the previous step's boot object is still in state (effects
+   * run after paint), so a stale boot must never unlock the screen — the
+   * runner only accepts a boot created for exactly the wanted project/step.
+   * Without this, a render (or a test's reload) right after advancing can
+   * take the child back to the previous step, before the async boot below
+   * has persisted `setPosition` (root-caused by the P1-15 journey test).
+   */
+  readonly projectId: string;
+  /** `null` only while the runner shows the load-error screen (no wanted step). */
+  readonly stepId: string | null;
 }
 
 export default function StepRunnerPage() {
@@ -111,7 +123,7 @@ export default function StepRunnerPage() {
           : undefined) ?? store.findOpenInstance(project.id);
       if (!instance) return;
       void store.setPosition({ projectId: project.id, instanceId: instance.id, stepId: wantedStep });
-      setBoot({ instance, attempt: null });
+      setBoot({ instance, attempt: null, projectId: project.id, stepId: wantedStep });
       return;
     }
     if (step === undefined) return;
@@ -135,7 +147,7 @@ export default function StepRunnerPage() {
         instanceId: started.instance.id,
         stepId: activeStep.id,
       });
-      if (live) setBoot({ instance: started.instance, attempt });
+      if (live) setBoot({ instance: started.instance, attempt, projectId: project.id, stepId: activeStep.id });
     })();
     return () => {
       live = false;
@@ -159,13 +171,16 @@ export default function StepRunnerPage() {
       </section>
     );
   }
+  const bootMatches =
+    boot !== null && boot.projectId === wantedProject && boot.stepId === wantedStep;
   if (
     bundle === null ||
     !ready ||
     store === null ||
     project === undefined ||
     lane === undefined ||
-    boot === null
+    boot === null ||
+    !bootMatches
   ) {
     return (
       <section className="cv-page">
