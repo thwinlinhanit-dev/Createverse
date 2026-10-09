@@ -21,6 +21,7 @@ export const zhHant: Record<MessageKey, string> = {
   // ---- project (shared demo copy) ---------------------------------------
   "project.bridge.title": "蓋一座橋",
   "project.bridge.body": "把木板拼起來，讓玩具車順利通過。",
+  "project.bridge.body.simple": "接好木板，讓小車通過。",
 
   // ---- layout / header ---------------------------------------------------
   "layout.stage": "階段",
@@ -66,6 +67,7 @@ export const zhHant: Record<MessageKey, string> = {
   "home.greeting":
     "{period, select, morning {早上好，準備好建造了嗎？} afternoon {下午好，準備好建造了嗎？} other {晚上好，準備好建造了嗎？}}",
   "home.lead": "從上次停下的地方繼續，或者開始新的事物。你的橋正在等你。",
+  "home.lead.simple": "繼續，或開始新的。",
   "home.continue.title": "繼續",
   "home.challenge.title": "今天的挑戰",
   "home.challenge.body": "做一座能讓玩具車撐住 8 秒的橋。",
@@ -214,6 +216,10 @@ export const zhHant: Record<MessageKey, string> = {
   "settings.stage.body": "孩子的階段會改變應用程式的外觀和行為。只有家長能改。",
   "settings.lang.title": "孩子的語言",
   "settings.lang.body": "每個字串都有英文和繁體中文。語言跟著孩子的設定。",
+  "settings.simple.title": "簡單語言",
+  "settings.simple.on": "開",
+  "settings.simple.off": "關",
+  "settings.simple.body": "在有提供的地方顯示更短的文字。任何階段和語言都能用。",
   "settings.time.title": "每天的時間限制",
   "settings.time.body": "還沒設定限制。設定限制會溫和地結束使用——從來不會跟孩子計時。",
   "settings.time.none": "沒有限制",
@@ -245,6 +251,7 @@ export const zhHant: Record<MessageKey, string> = {
   "runner.draft.body":
     "這個專案還沒有審核。試玩時請有大人在旁邊。",
   "runner.stepOf": "第 {current} 步，共 {total} 步",
+  "runner.step.announced": "第 {current} 步，共 {total} 步：{title}",
   "runner.step.state.done": "完成了",
   "runner.step.state.now": "現在",
   "runner.step.state.later": "之後",
@@ -253,6 +260,7 @@ export const zhHant: Record<MessageKey, string> = {
   "runner.step.done": "我完成這一步了",
   "runner.step.next": "下一步",
   "runner.step.needSuccess": "把橋測到撐得住，再繼續。",
+  "runner.step.needSuccess.simple": "把橋測到撐得住。",
   "runner.moveOn": "先跳過",
   "runner.moveOn.body":
     "你已經測了 {count} 次。可以先往下走，晚點再回來。",
@@ -276,6 +284,7 @@ export const zhHant: Record<MessageKey, string> = {
     "{count, plural, =0 {還沒有用提示} other {用了 # 個提示}}",
   "hint.exhausted": "提示看完了。試試你的想法，或問大人。",
   "hint.of": "提示 {level}",
+  "hint.announced": "已顯示第 {level} 個提示",
 
   // ---- bridge lab ----------------------------------------------------------
   "lab.tray": "選一個零件",
@@ -346,4 +355,7 @@ export const zhHant: Record<MessageKey, string> = {
   "progress.last.hint": "在{project}問了提示",
   "progress.sync.pending":
     "{count, plural, =0 {全部都存在這台裝置上了。} other {# 個變化存在這台裝置上，晚點再傳送。}}",
+
+  // ---- media captions (DESIGN_SYSTEM §8 hook, P1-13) -----------------------
+  "media.captions.label": "字幕",
 };

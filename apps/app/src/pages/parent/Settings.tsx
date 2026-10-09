@@ -9,7 +9,7 @@ import {
 } from "../../mentor/settings.ts";
 
 export default function SettingsPage() {
-  const { profile, setProfileStage, setProfileLanguage } = useApp();
+  const { profile, setProfileStage, setProfileLanguage, setProfileSimpleLanguage } = useApp();
   const t = useT();
   // P1-07: the parent live-AI switch is real — MentorService reads it on
   // every request (default off; Junior is never allowed regardless).
@@ -63,6 +63,23 @@ export default function SettingsPage() {
           />
         </div>
         <p className="cv-page-empty">{t("settings.lang.body")}</p>
+      </section>
+
+      <section className="cv-page-section">
+        <h3 className="cv-page-section-title">{t("settings.simple.title")}</h3>
+        <div className="cv-settings-group">
+          <Chip
+            label={t("settings.simple.on")}
+            selected={profile.simpleLanguage === true}
+            onClick={() => setProfileSimpleLanguage(true)}
+          />
+          <Chip
+            label={t("settings.simple.off")}
+            selected={profile.simpleLanguage === false}
+            onClick={() => setProfileSimpleLanguage(false)}
+          />
+        </div>
+        <p className="cv-page-empty">{t("settings.simple.body")}</p>
       </section>
 
       <section className="cv-page-section">

@@ -359,6 +359,20 @@ export default function StepRunnerPage() {
         aria-label={t("runner.stepOf", { current: stepIndex + 1, total: activeLane.steps.length })}
       />
       <h2 className="cv-page-title">{messages[activeStep.prompt_key] ?? activeStep.prompt_key}</h2>
+      {/* DESIGN_SYSTEM §8: live region — the lane moves without focus moving,
+          so the new step is announced when the runner advances. */}
+      <p
+        role="status"
+        aria-live="polite"
+        className="cv-sr-only"
+        data-testid="runner-live"
+      >
+        {t("runner.step.announced", {
+          current: stepIndex + 1,
+          total: activeLane.steps.length,
+          title: messages[activeStep.prompt_key] ?? activeStep.prompt_key,
+        })}
+      </p>
       <ReadAloudButton
         text={messages[activeStep.prompt_key] ?? activeStep.prompt_key}
         locale={profile.language}

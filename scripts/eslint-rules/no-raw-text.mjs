@@ -31,6 +31,8 @@ const ALLOWED_ATTRS = new Set([
   "className", "id", "type", "role", "href", "htmlFor", "key", "lang", "langKey",
   "name", "value", "size", "align", "variant", "kind", "icon", "hash", "route",
   "stage", "as", "target", "rel", "stroke", "fill", "viewBox", "xmlns",
+  // media wiring (paths/enum tokens, never visible copy — P1-13 captions hook)
+  "preload", "src", "mimeType", "captionsSrc",
   "strokeLinecap", "strokeLinejoin", "strokeMiterlimit", "strokeOpacity",
   "strokeWidth", "fillRule", "fillOpacity", "clipRule", "clipPath",
   "vectorEffect", "shapeRendering", "pointerEvents",

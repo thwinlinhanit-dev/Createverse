@@ -43,9 +43,13 @@ export function stageAgeKey(stage: ShellStage): MessageKey {
   return STAGE_AGE_KEYS[stage];
 }
 
-/** Translator bound to the current child-profile language. */
+/** Translator bound to the current child-profile language (+ simple mode). */
 export function useT(): Translator {
   const { profile } = useApp();
   const locale = profile.language satisfies Locale;
-  return useMemo(() => createTranslator(locale), [locale]);
+  // Simple-language mode (DESIGN_SYSTEM §8, P1-13): the profile flag switches
+  // every t(key) call to the shorter `<key>.simple` variant when the catalogs
+  // ship one — the hook for shorter text in any stage preset.
+  const simple = profile.simpleLanguage;
+  return useMemo(() => createTranslator(locale, undefined, { simple }), [locale, simple]);
 }

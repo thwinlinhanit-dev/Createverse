@@ -181,6 +181,25 @@ Test hygiene: stable `data-testid` attributes, no fixed sleeps (wait on conditio
 - **i18n completeness:** build fails on missing keys. Pseudo-localization (long strings) run to detect layout breaks.
 - **CJK rendering:** font stack check for Traditional Chinese on target devices, and line breaking.
 
+### 9.1 Automated suite (P1-13)
+
+`pnpm test:e2e` runs `e2e/a11y.spec.ts` (Playwright + `@axe-core/playwright`) against the real dev server; CI runs it as the `a11y` job after `pnpm check`:
+
+- axe (WCAG 2.1 A + AA) — seven key child screens in en + zh-Hant, parent gate + all five parent screens, home + step runner under all three stage presets, simple-language mode in both locales.
+- keyboard-only bridge placement (canvas wrap focus → Arrow keys → Enter → piece placed and announced), the 3px focus ring on first Tab, and the never-color-only rule (force-view written legend, icon + words on failed runs).
+- Scans emulate `reducedMotion: "reduce"` so shell.css turns chip color transitions off — contrast is measured in a settled state.
+
+### 9.2 Manual device checklist (P1-13 — run on the real phone + tablet)
+
+- [ ] Text scaling at 200%: no clipped or overlapping UI on any key screen (phone layout).
+- [ ] Touch targets ≥48 px (≥64 px in Junior), including the lab tray chips on the bridge step.
+- [ ] VoiceOver/TalkBack: step change, new hint and lab result are announced (live regions); parent gate announces as a dialog; labels correct in both languages.
+- [ ] Read-aloud picks the right voice for `en` and `zh-TW`/`zh-HK`; parent notice shows when no voice is installed.
+- [ ] Simple-language mode (parent Settings) visibly shortens copy, in both languages.
+- [ ] With the system reduced-motion preference set, transitions are off.
+- [ ] No color-only cues in device screenshots (force view has its written legend; success/fail show icon + words).
+- [ ] PWA installs and the shell works offline.
+
 ---
 
 ## 10. Performance tests

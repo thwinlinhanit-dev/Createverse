@@ -32,6 +32,19 @@ export const catalogs: Catalogs = { en, "zh-Hant": zhHant };
 
 export type Translator = (key: MessageKey, values?: MessageValues) => string;
 
+/** Options that change how a key resolves (DESIGN_SYSTEM §8). */
+export interface TranslatorOptions {
+  /**
+   * Simple-language mode (DESIGN_SYSTEM §8: "shorter text in any preset").
+   * When on, `t(key)` first looks for a `<key>.simple` message in the catalogs
+   * and falls back to the normal message when there is none — so any screen
+   * can offer shorter copy with the same key, without a second translator or
+   * duplicated component tree. The `.simple` variant uses the same ICU
+   * placeholders as its base key (parity is asserted in i18n.test.ts).
+   */
+  readonly simple?: boolean;
+}
+
 /**
  * Compiled-message cache keyed by locale + message text. Catalogs are static,
  * so each message is parsed once per process (keeps per-render cost to a
@@ -62,9 +75,17 @@ function format(locale: Locale, message: string, values?: MessageValues): string
 export function createTranslator(
   locale: Locale,
   source: Catalogs = catalogs,
+  options: TranslatorOptions = {},
 ): Translator {
   return (key, values) => {
-    const message = source[locale][key] ?? source.en[key] ?? key;
+    const simpleKey = `${key}.simple`;
+    const message = options.simple === true
+      ? (source[locale][simpleKey] ??
+        source.en[simpleKey] ??
+        source[locale][key] ??
+        source.en[key] ??
+        key)
+      : (source[locale][key] ?? source.en[key] ?? key);
     return format(locale, message, values);
   };
 }

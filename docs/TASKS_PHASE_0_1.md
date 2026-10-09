@@ -211,7 +211,7 @@ ACCEPTANCE CRITERIA: verified end to end; audit row written; nothing personal in
 DEPENDENCIES: P1-01.
 NOTE: the app-side Settings export/delete buttons stay disabled until the app-side identity task (P1-18) provides a parent session client — the API behind them is live and tested.
 
-## P1-13 — Accessibility baseline — **TODO**
+## P1-13 — Accessibility baseline — **DONE (2026-10-09)**
 
 GOAL: Contrast, scalable text (200%), captions/audio hooks, simple-language mode, focus rings, screen-reader live regions.
 REQUIREMENTS: DESIGN_SYSTEM §8 checklist; axe clean on key screens; keyboard alternative for experience placement (select, move, place).

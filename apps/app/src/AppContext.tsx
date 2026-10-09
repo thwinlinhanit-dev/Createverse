@@ -20,6 +20,12 @@ export interface ChildProfile {
   readonly displayName: string;
   readonly stage: "junior" | "explorer" | "maker" | "parent";
   readonly language: "en" | "zh-Hant";
+  /**
+   * Simple-language mode (DESIGN_SYSTEM §8, P1-13): shorter `<key>.simple`
+   * copy where the catalogs ship it. A profile-level preference like stage
+   * and language — the translator in ./i18n.ts binds it.
+   */
+  readonly simpleLanguage: boolean;
 }
 
 interface AppState {
@@ -35,6 +41,7 @@ interface AppState {
 interface AppActions {
   setProfileStage: (stage: ChildProfile["stage"]) => void;
   setProfileLanguage: (language: ChildProfile["language"]) => void;
+  setProfileSimpleLanguage: (simpleLanguage: boolean) => void;
   confirmParentGate: () => void;
   navigateTo: (hash: string) => void;
   openProject: (projectId: string) => void;
@@ -60,6 +67,7 @@ const DEFAULT_PROFILE: ChildProfile = {
   displayName: "Child",
   stage: "junior",
   language: "en",
+  simpleLanguage: false,
 };
 
 export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE) {
@@ -78,6 +86,11 @@ export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE)
   const setProfileLanguage = (language: ChildProfile["language"]) =>
     setProfileRaw((prev) =>
       prev.language !== language ? { ...prev, language } : prev,
+    );
+
+  const setProfileSimpleLanguage = (simpleLanguage: boolean) =>
+    setProfileRaw((prev) =>
+      prev.simpleLanguage !== simpleLanguage ? { ...prev, simpleLanguage } : prev,
     );
 
   const confirmParentGate = () => setIsParentGateOpen(false);
@@ -146,6 +159,7 @@ export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE)
       stepId,
       setProfileStage,
       setProfileLanguage,
+      setProfileSimpleLanguage,
       confirmParentGate,
       navigateTo,
       openProject,
@@ -160,6 +174,7 @@ export function createAppContext(initialProfile: ChildProfile = DEFAULT_PROFILE)
       stepId,
       setProfileStage,
       setProfileLanguage,
+      setProfileSimpleLanguage,
       confirmParentGate,
       navigateTo,
       openProject,

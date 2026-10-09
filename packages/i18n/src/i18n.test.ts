@@ -124,3 +124,41 @@ describe("fallback (TESTING.md section 6: fallback to en)", () => {
     expect(t("does.not.exist" as MessageKey)).toBe("does.not.exist");
   });
 });
+
+describe("simple-language mode (DESIGN_SYSTEM section 8, P1-13)", () => {
+  it("prefers the <key>.simple variant in every locale when enabled", () => {
+    const en = createTranslator("en", catalogs, { simple: true });
+    const zh = createTranslator("zh-Hant", catalogs, { simple: true });
+    expect(en("home.lead")).toBe("Keep going, or start something new.");
+    expect(zh("home.lead")).toBe("繼續，或開始新的。");
+    expect(en("project.bridge.body")).toBe("Join the planks so the car can cross.");
+  });
+
+  it("falls back to the normal message when a key has no simple variant", () => {
+    const t = createTranslator("en", catalogs, { simple: true });
+    expect(t("nav.child.home")).toBe("Home");
+    expect(t("settings.title")).toBe("Settings");
+  });
+
+  it("is off by default and changes nothing without the flag", () => {
+    expect(translate("en", "home.lead")).toBe(
+      "Pick up where you left off, or start something new. Your bridge is waiting.",
+    );
+    expect(createTranslator("en", catalogs, { simple: false })("home.lead")).toBe(
+      translate("en", "home.lead"),
+    );
+  });
+
+  it("keeps the base key's ICU placeholders in every .simple variant", () => {
+    for (const key of Object.keys(en)) {
+      if (!key.endsWith(".simple")) continue;
+      const base = key.slice(0, -".simple".length);
+      expect(placeholders(en[key as MessageKey]), key).toEqual(
+        placeholders(en[base as MessageKey]),
+      );
+      expect(placeholders(zhHant[key as MessageKey]), key).toEqual(
+        placeholders(zhHant[base as MessageKey]),
+      );
+    }
+  });
+});

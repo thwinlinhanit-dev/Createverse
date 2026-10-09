@@ -33,6 +33,18 @@ export function HintPanel({
 
   return (
     <section className="cv-hint-panel" aria-label={t("hint.get")}>
+      {/* DESIGN_SYSTEM §8: live region — a newly shown hint is announced
+          without moving focus (the button stays put for the next press). */}
+      <p
+        role="status"
+        aria-live="polite"
+        className="cv-sr-only"
+        data-testid="hint-live"
+      >
+        {progress.levelReached > 0
+          ? t("hint.announced", { level: progress.levelReached })
+          : ""}
+      </p>
       {shown.map((hint) => (
         <p key={hint.level} className="cv-hint-text">
           <strong>{t("hint.of", { level: hint.level })}</strong>

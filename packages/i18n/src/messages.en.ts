@@ -20,6 +20,7 @@ export const en = {
   // ---- project (shared demo copy) ---------------------------------------
   "project.bridge.title": "Build a Bridge",
   "project.bridge.body": "Put the planks together so the toy car can cross.",
+  "project.bridge.body.simple": "Join the planks so the car can cross.",
 
   // ---- layout / header ---------------------------------------------------
   "layout.stage": "Stage",
@@ -65,6 +66,7 @@ export const en = {
   "home.greeting":
     "{period, select, morning {Good morning, and ready to build?} afternoon {Good afternoon, and ready to build?} other {Good evening, and ready to build?}}",
   "home.lead": "Pick up where you left off, or start something new. Your bridge is waiting.",
+  "home.lead.simple": "Keep going, or start something new.",
   "home.continue.title": "Continue",
   "home.challenge.title": "Today's challenge",
   "home.challenge.body": "Make a bridge that holds the toy car for 8 seconds.",
@@ -232,6 +234,11 @@ export const en = {
   "settings.lang.title": "Child's language",
   "settings.lang.body":
     "Every string exists in English and Traditional Chinese. The language follows the child's profile.",
+  "settings.simple.title": "Simple language",
+  "settings.simple.on": "On",
+  "settings.simple.off": "Off",
+  "settings.simple.body":
+    "Shows shorter wording where the app offers it. Works with any stage or language.",
   "settings.time.title": "Daily time limit",
   "settings.time.body":
     "No limit set yet. Setting a limit ends sessions calmly — nothing is timed against your child.",
@@ -267,6 +274,7 @@ export const en = {
   "runner.draft.body":
     "This project is not reviewed yet. A grown-up stays nearby while trying it.",
   "runner.stepOf": "Step {current} of {total}",
+  "runner.step.announced": "Step {current} of {total}: {title}",
   "runner.step.state.done": "Done",
   "runner.step.state.now": "Now",
   "runner.step.state.later": "Later",
@@ -275,6 +283,7 @@ export const en = {
   "runner.step.done": "I finished this step",
   "runner.step.next": "Next step",
   "runner.step.needSuccess": "Test your bridge until it holds, then continue.",
+  "runner.step.needSuccess.simple": "Test your bridge until it holds.",
   "runner.moveOn": "Move on for now",
   "runner.moveOn.body":
     "You tested {count} times. You can move on and come back later.",
@@ -298,6 +307,7 @@ export const en = {
     "{count, plural, =0 {No hints yet} one {# hint used} other {# hints used}}",
   "hint.exhausted": "You saw all the hints. Try your idea, or ask a grown-up.",
   "hint.of": "Hint {level}",
+  "hint.announced": "Hint {level} shown",
 
   // ---- bridge lab ----------------------------------------------------------
   "lab.tray": "Choose a piece",
@@ -368,6 +378,9 @@ export const en = {
   "progress.last.hint": "Asked for a hint in {project}",
   "progress.sync.pending":
     "{count, plural, =0 {Everything is saved on this device.} one {# change saved on this device, sends later.} other {# changes saved on this device, send later.}}",
+
+  // ---- media captions (DESIGN_SYSTEM §8 hook, P1-13) -----------------------
+  "media.captions.label": "Captions",
 } satisfies Record<string, string>;
 
 /** Every message key in the system (derived from the English catalog). */

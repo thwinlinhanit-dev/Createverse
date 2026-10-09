@@ -13,7 +13,9 @@
     "backend/src/**/*.ts",
     "backend/test/**/*.ts",
     "backend/drizzle.config.ts",
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts"
   ]
 }
 
